@@ -1,0 +1,9 @@
+data/raw/
+data/processed/
+data/processed_bilingue/
+data/explanations/
+models/lstm.keras
+models/explicador/
+models/*.joblib
+__pycache__/
+*.pyc

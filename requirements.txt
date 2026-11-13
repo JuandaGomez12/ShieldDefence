@@ -1,0 +1,10 @@
+# Servidor (lo que instala el Space). PyTorch se instala aparte en su versión para CPU.
+numpy>=1.26
+fastapi>=0.110
+uvicorn[standard]>=0.29
+python-multipart>=0.0.9
+pydantic>=2.5
+pillow>=10.0
+pytesseract>=0.3.10
+pypdf>=4.0
+transformers>=4.45
