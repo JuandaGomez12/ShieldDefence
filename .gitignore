@@ -7,3 +7,5 @@ models/explicador/
 models/*.joblib
 __pycache__/
 *.pyc
+web/model/
+docs/model/
