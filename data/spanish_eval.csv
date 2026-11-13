@@ -1,0 +1,52 @@
+text,label,note
+"Asunto: Su cuenta será suspendida
+Estimado cliente, hemos detectado actividad inusual en su cuenta. Para evitar la suspensión permanente, debe verificar sus datos inmediatamente. Haga clic en el siguiente enlace para confirmar su identidad: https://banc0-seguridad.com/verificacion
+Tiene 24 horas para realizar el proceso.",1,Ejemplo del prototipo (banco falso)
+"Asunto: ¡Felicidades! Has ganado un premio
+Estimado usuario, Nequi te informa que has ganado un bono de $500.000. Para reclamarlo debes ingresar tu clave en el siguiente enlace antes de 24 horas: http://nequi-seguridad.xyz/premio
+Si no lo reclamas, tu cuenta será bloqueada. Equipo Nequi",1,Captura del Hito 2
+"Asunto: Formato de vacaciones
+Hola Juan, soy Laura de recursos humanos. Te comparto el nuevo formato de vacaciones, revísalo y me confirmas antes del viernes: https://docs-empresa.com/formato",1,Phishing bien escrito que las reglas no detectaban
+"Asunto: Actualización de nómina
+Buenos días, por cambios en el sistema de pagos necesitamos que actualices tu cuenta bancaria para recibir el salario de este mes. Ingresa con tu usuario y contraseña del correo institucional en https://portal-nomina-escuela.com antes del 30. Gracias, Talento Humano",1,Suplantación de nómina
+"Asunto: Paquete retenido
+Su envío no pudo ser entregado por falta de pago de $4.900 en impuestos. Pague ahora en https://bit.ly/envio-co para evitar la devolución del paquete. Servientrega",1,Paquete falso con enlace acortado
+"Asunto: Problema con tu suscripción
+Hola, no pudimos procesar el pago de tu plan de Netflix. Actualiza los datos de tu tarjeta en las próximas 48 horas para no perder el acceso: http://netflix-pagos.top/actualizar",1,Suscripción falsa
+"Asunto: Urgente
+Hola, estoy en una reunión y no puedo hablar. Necesito que me compres cuatro tarjetas de regalo de $100.000 para un cliente y me mandes los códigos por aquí lo antes posible. Te lo devuelvo hoy. Gracias, Andrés (Gerente)",1,Fraude del jefe
+"Asunto: Verificación de su cuenta de correo
+Su buzón ha superado el límite de almacenamiento. Para seguir recibiendo mensajes, valide su cuenta aquí: http://192.168.40.12/webmail/login
+Mesa de ayuda TI",1,Correo con IP
+"Asunto: Reembolso de la DIAN
+Usted tiene un saldo a favor de $1.250.000 por su declaración de renta. Para recibir la devolución ingrese su número de cuenta y documento en el siguiente formulario: https://dian-devoluciones.info/formulario",1,Entidad del Estado falsa
+"Asunto: Documento compartido contigo
+Carlos te ha compartido el archivo ""Notas finales 2026.xlsx"". Para abrirlo, inicia sesión con tu cuenta de Microsoft: https://onedrive-share-docs.com/view?id=88421",1,Documento compartido falso
+"Asunto: Inversión segura
+Querido amigo, tengo una oportunidad única de inversión en criptomonedas con ganancias del 40% mensual garantizadas. Solo debes transferir un mínimo de $2.000.000 a la cuenta que te indique. Responde rápido, los cupos son limitados.",1,Estafa de inversión sin enlace
+"Asunto: Confirmación de compra
+Gracias por su compra de un iPhone 15 por $5.800.000. Si usted no realizó esta compra, llame de inmediato al 601 555 0199 para cancelarla y proteger su tarjeta.",1,Factura falsa que pide llamar
+"Asunto: Reunión del proyecto
+Hola Juan, te recuerdo que la reunión del proyecto de PTIA es el jueves a las 2 p. m. en el bloque G. Yo llevo el avance del documento y tú el del prototipo. Saludos, Camilo",0,Captura del Hito 2
+"Asunto: Cambio de clave
+Estimado cliente, su clave fue cambiada hoy. Si no fue usted, comuníquese de inmediato con la línea oficial que aparece en su tarjeta.",0,Aviso real del banco (falso positivo de las reglas)
+"Asunto: Notas del parcial
+Buenas tardes, ya están publicadas las notas del segundo parcial en Moodle. Si tienen alguna duda, pueden pasar a la oficina el martes en el horario de atención. Saludos, profesora Martínez",0,Aviso de una profesora
+"Asunto: Tu pedido va en camino
+Hola Juan, tu pedido #48213 salió del centro de distribución y llegará entre el 14 y el 16 de noviembre. Puedes ver el estado en la sección Mis compras de la aplicación.",0,Envío real sin enlace
+"Asunto: Factura electrónica
+Adjuntamos la factura electrónica correspondiente al servicio de internet del mes de octubre por $89.900. La fecha límite de pago es el 20 de noviembre. Este es un mensaje automático, por favor no lo responda.",0,Factura de servicio
+"Asunto: Cumpleaños de mi mamá
+Hola tía, el sábado vamos a hacerle una comida sorpresa a mi mamá en la casa a las 7. ¿Puedes llevar el postre? Avísame si puedes llegar temprano para ayudar a decorar.",0,Correo familiar
+"Asunto: Inscripción de materias
+Estudiante, le recordamos que las inscripciones para el siguiente periodo académico abren el lunes 24 de noviembre a las 8:00 a. m. Consulte su turno en el sistema académico de la universidad.",0,Aviso de la universidad
+"Asunto: Confirmación de cita
+Su cita médica de medicina general quedó agendada para el miércoles 19 de noviembre a las 10:30 a. m. en la sede norte. Recuerde llegar 15 minutos antes con su documento de identidad.",0,Cita médica
+"Asunto: Código de verificación
+Tu código de verificación es 482193. Si no solicitaste este código, puedes ignorar este mensaje. Nunca compartas este código con nadie.",0,Código de verificación legítimo
+"Asunto: Entrega del informe
+Hola equipo, les comparto el borrador del informe en la carpeta del proyecto. Por favor revisen la sección de resultados antes del viernes y dejen sus comentarios. Gracias.",0,Correo de trabajo
+"Asunto: Boletín semanal
+Esta semana en la biblioteca: nuevos libros de inteligencia artificial, taller de citación APA el jueves y horario extendido por parciales. Para dejar de recibir este boletín, escriba a la biblioteca.",0,Boletín
+"Asunto: Partido del domingo
+Parce, el partido es el domingo a las 9 en la cancha del barrio. Lleva el balón y la camiseta azul. Ya somos diez, falta uno.",0,Mensaje de amigos
