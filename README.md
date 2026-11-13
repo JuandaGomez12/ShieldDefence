@@ -99,8 +99,17 @@ guardar el token de Hugging Face como secreto `HF_TOKEN` y ejecutar las celdas e
 Copias usadas: [rokibulroni/Phishing-Email-Dataset](https://github.com/rokibulroni/Phishing-Email-Dataset)
 (recopilación de Al-Subaiey et al., 2024; CC BY-SA 4.0) y
 [cramosme/LLM-Phishing-Detection](https://github.com/cramosme/LLM-Phishing-Detection).
-`data/spanish_eval.csv` tiene 24 correos en español escritos por el equipo solo para pruebas. No se
+`data/spanish_eval.csv` tiene 30 correos en español escritos por el equipo solo para pruebas. No se
 usan para entrenar.
+
+## Sesgo del saludo
+
+En el español traducido, casi solo el phishing empezaba con saludo ("Dear customer" → "Hola"), y la
+primera BiLSTM aprendió que "Hola, buenos días" ya era phishing (un correo normal de un profesor salía
+con 89%). Ahora `train_lstm.py` agrega saludos y despedidas al azar a los correos de entrenamiento y
+validación de las dos clases, y el umbral se elige pidiendo 95% de precisión en vez de 85%.
+`lstm_config.json` guarda `falsas_alarmas_por_saludo`: de los correos legítimos de prueba que el modelo
+acierta, qué fracción pasa a phishing si se le antepone un saludo.
 
 ## Limitaciones
 
