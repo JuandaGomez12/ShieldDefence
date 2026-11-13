@@ -1,0 +1,38 @@
+{
+  "test": {
+    "n": 1723,
+    "umbral": 0.5,
+    "accuracy": 0.9913,
+    "precision": 0.993,
+    "recall": 0.9896,
+    "f1": 0.9913,
+    "matriz": {
+      "VN": 855,
+      "FP": 6,
+      "FN": 9,
+      "VP": 853
+    },
+    "por_fuente": {
+      "Enron": 0.9972,
+      "LLM_legit": 0.9662,
+      "LLM_phishing": 0.9933,
+      "Nazario": 0.9782,
+      "Nigerian_Fraud": 0.9938,
+      "SpamAssasin": 1.0
+    }
+  },
+  "spanish": {
+    "n": 24,
+    "umbral": 0.5,
+    "accuracy": 0.5,
+    "precision": 0.5,
+    "recall": 0.9167,
+    "f1": 0.6471,
+    "matriz": {
+      "VN": 1,
+      "FP": 11,
+      "FN": 1,
+      "VP": 11
+    }
+  }
+}
