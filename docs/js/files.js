@@ -6,8 +6,8 @@ let ocrWorker = null;
 async function ocr(image, onStatus) {
   if (!ocrWorker) {
     onStatus("Cargando el lector de imágenes (solo la primera vez)...");
-    const { createWorker } = await import(TESSERACT_URL);
-    ocrWorker = await createWorker(["spa", "eng"]);
+    const mod = await import(TESSERACT_URL);
+    ocrWorker = await (mod.createWorker || mod.default.createWorker)(["spa", "eng"]);
   }
   onStatus("Leyendo el texto de la imagen...");
   const { data } = await ocrWorker.recognize(image);
