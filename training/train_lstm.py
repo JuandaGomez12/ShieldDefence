@@ -28,6 +28,58 @@ MAX_LEN = 300
 EMB = 128
 UNITS = 64
 
+# Saludos y despedidas que se agregan al azar a los correos de entrenamiento, sin importar la clase.
+# En los datos originales casi solo el phishing saluda ("Dear customer" -> "Hola"), y el modelo aprendía
+# que "Hola, buenos días" ya era señal de phishing. Así el saludo deja de diferenciar las clases.
+SALUDOS = {
+    "es": ["Hola", "Hola, buenos días", "Buenos días", "Buenas tardes", "Buenas noches", "Hola a todos",
+           "Hola equipo", "Estimados estudiantes", "Estimado profesor", "Hola Juan", "Hola María",
+           "Cordial saludo", "Buen día", "Qué tal"],
+    "en": ["Hi", "Hello", "Hi all", "Hello team", "Good morning", "Good afternoon", "Hey", "Hi John",
+           "Hello Mary", "Dear all", "Dear professor", "Greetings"],
+}
+DESPEDIDAS = {
+    "es": ["Saludos", "Gracias", "Muchas gracias", "Cordialmente", "Un abrazo", "Quedo atento",
+           "Quedo atenta", "Feliz día", "Atentamente"],
+    "en": ["Regards", "Best regards", "Thanks", "Thank you", "Best", "Cheers", "Sincerely", "Kind regards"],
+}
+
+
+def add_greetings(df, seed, p=0.5):
+    """Antepone un saludo y agrega una despedida al azar (cada uno con probabilidad p)."""
+    rng = np.random.default_rng(seed)
+    out = []
+    for text, src in zip(df.model_text, df.source):
+        lang = "es" if str(src).endswith("_es") else "en"
+        if rng.random() < p:
+            text = for_model(rng.choice(SALUDOS[lang])) + " " + text
+        if rng.random() < p:
+            text = text + " " + for_model(rng.choice(DESPEDIDAS[lang]))
+        out.append(text)
+    df = df.copy()
+    df["model_text"] = out
+    return df
+
+
+def greeting_false_alarms(model, te, thr):
+    """De los correos legítimos de prueba que el modelo acierta, cuántos pasan a phishing al saludar."""
+    legit = te[te.label == 0]
+    base = model.predict(X(legit), batch_size=256, verbose=0).ravel() < thr
+    res = {}
+    for lang, greet in (("es", "hola buenos días"), ("en", "hello good morning")):
+        mask = legit.source.str.endswith("_es").values == (lang == "es")
+        sub = legit[mask & base]
+        if not len(sub):
+            continue
+        pg = model.predict(np.array([greet + " " + t for t in sub.model_text], dtype=object),
+                           batch_size=256, verbose=0).ravel()
+        res[lang] = {"correos": int(len(sub)), "pasan_a_phishing": round(float((pg >= thr).mean()), 4)}
+    return res
+
+
+def X(d):
+    return np.array(d.model_text.tolist(), dtype=object)
+
 
 def build_model(train_texts, vocab=VOCAB):
     vectorize = layers.TextVectorization(
@@ -51,7 +103,7 @@ def build_model(train_texts, vocab=VOCAB):
     return model
 
 
-def pick_threshold(y, p, min_precision=0.85):
+def pick_threshold(y, p, min_precision=0.95):
     """Umbral que da el mayor recall manteniendo la precisión por encima del mínimo."""
     y = np.asarray(y)
     best_t, best_key = 0.5, (-1.0, -1.0)
@@ -73,6 +125,8 @@ def main():
     ap.add_argument("--data", default=str(ROOT / "data" / "processed"))
     ap.add_argument("--out", default=str(ROOT / "models"))
     ap.add_argument("--vocab", type=int, default=VOCAB)
+    ap.add_argument("--min_precision", type=float, default=0.95)
+    ap.add_argument("--sin_saludos", action="store_true", help="no agregar saludos al entrenar")
     a = ap.parse_args()
     keras.utils.set_random_seed(42)
 
@@ -80,7 +134,8 @@ def main():
     tr, va, te = (pd.read_csv(D / f"{s}.csv") for s in ("train", "val", "test"))
     for d in (tr, va, te):
         d["model_text"] = d["model_text"].fillna("").astype(str)
-    X = lambda d: np.array(d.model_text.tolist(), dtype=object)  # noqa: E731
+    if not a.sin_saludos:
+        tr, va = add_greetings(tr, 1), add_greetings(va, 2)
 
     model = build_model(X(tr), a.vocab)
     model.summary()
@@ -91,9 +146,11 @@ def main():
     )
 
     pv = model.predict(X(va), batch_size=256, verbose=0).ravel()
-    thr = pick_threshold(va.label.values, pv)
+    thr = pick_threshold(va.label.values, pv, a.min_precision)
     pt = model.predict(X(te), batch_size=256, verbose=0).ravel()
-    res = {"umbral": thr, "test": report(te.label, pt, te.source, thr)}
+    res = {"umbral": thr, "precision_minima": a.min_precision, "saludos_al_entrenar": not a.sin_saludos,
+           "test": report(te.label, pt, te.source, thr),
+           "falsas_alarmas_por_saludo": greeting_false_alarms(model, te, thr)}
 
     es_path = ROOT / "data" / "spanish_eval.csv"
     if es_path.exists():
