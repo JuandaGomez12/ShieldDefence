@@ -321,3 +321,4 @@ body {
 }
 .status.loading { background: #fef3c7; color: #92400e; }
 .status.error { background: #fee4e2; color: #b42318; }
+.llm-toggle[hidden] { display: none; }

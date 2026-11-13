@@ -30,10 +30,12 @@ No tiene servidor: todo corre en el navegador de quien la usa, así que el corre
 
 - La BiLSTM se pasó a JavaScript (`docs/js/shield-core.js`) junto con la limpieza del texto, las
   señales y el prompt. `tests/web/parity.mjs` comprueba que da lo mismo que Python.
-- El LLM se exporta a ONNX y se cuantiza a 4 bits (`training/export_onnx.py`, unos 400 MB). Corre con
-  [Transformers.js](https://huggingface.co/docs/transformers.js), con WebGPU si el navegador lo tiene.
-  Es opcional: se activa con el botón "Activar explicación con IA" y el navegador lo guarda después
-  de la primera descarga. Mientras tanto se muestra la explicación por plantilla.
+- El LLM se exporta a ONNX y se cuantiza a 4 bits (`training/export_onnx.py`, unos 440 MB) para correr
+  con [Transformers.js](https://huggingface.co/docs/transformers.js). **Por ahora está oculto en la
+  página:** con WebGPU genera texto sin sentido, y en CPU tarda cerca de 3 minutos y la versión de 4 bits
+  pierde el formato de respuesta. En Colab (PyTorch, GPU T4) sí funciona bien: 100% de respuestas con el
+  formato esperado, 100% coherentes con la LSTM y 3.75 s por explicación (paso 9 del notebook).
+  Mientras tanto la página muestra la explicación por plantilla. Para probar el LLM: `?llm=1`.
 - El OCR usa Tesseract.js y los PDF se leen con PDF.js.
 - Los pesos se descargan de Hugging Face:
   [shielddefence-lstm](https://huggingface.co/juandaGomez/shielddefence-lstm) y
@@ -104,5 +106,5 @@ usan para entrenar.
 
 - Casi todos los datos son en inglés y de otros años. El español depende de la traducción automática.
 - La LSTM solo mira el texto: no revisa adjuntos, encabezados técnicos ni qué hay detrás de un enlace.
-- El LLM en el navegador pesa unos 400 MB y en un computador sin WebGPU puede tardar bastante
-  en escribir cada explicación. Por eso es opcional.
+- El LLM todavía no funciona bien en el navegador (ver arriba), así que la página publicada explica
+  con plantillas. El LLM ajustado sí funciona en la versión con servidor (FastAPI).

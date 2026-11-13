@@ -7,7 +7,7 @@
 import {
   cleanRaw, detect, BiLSTM, SYSTEM, buildPrompt, templateExplanation, parseAnswer, consistent,
 } from "./shield-core.js";
-import { LSTM_BASE, LLM_REPO, LLM_MAX_TOKENS, TRANSFORMERS_URL } from "./config.js";
+import { LSTM_BASE, LLM_REPO, LLM_MAX_TOKENS, LLM_ENABLED, TRANSFORMERS_URL } from "./config.js";
 import { extractText } from "./files.js";
 
 const $ = (id) => document.getElementById(id);
@@ -90,6 +90,7 @@ function updateLlmButton(text) {
   llmBtn.classList.toggle("on", llm.state === "ready");
   llmBtn.disabled = llm.state === "loading";
 }
+llmBtn.hidden = !LLM_ENABLED;
 llmBtn.addEventListener("click", () => {
   if (llm.state === "off") llm.start();
 });
