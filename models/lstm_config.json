@@ -1,0 +1,204 @@
+{
+  "umbral": 0.2,
+  "test": {
+    "n": 1723,
+    "umbral": 0.2,
+    "accuracy": 0.9867,
+    "precision": 0.9839,
+    "recall": 0.9896,
+    "f1": 0.9867,
+    "matriz": {
+      "VN": 847,
+      "FP": 14,
+      "FN": 9,
+      "VP": 853
+    },
+    "por_fuente": {
+      "Enron": 0.986,
+      "LLM_legit": 0.973,
+      "LLM_phishing": 0.9733,
+      "Nazario": 0.9869,
+      "Nigerian_Fraud": 0.9959,
+      "SpamAssasin": 0.986
+    }
+  },
+  "spanish": {
+    "n": 24,
+    "umbral": 0.2,
+    "accuracy": 0.5,
+    "precision": 0.5,
+    "recall": 1.0,
+    "f1": 0.6667,
+    "matriz": {
+      "VN": 0,
+      "FP": 12,
+      "FN": 0,
+      "VP": 12
+    }
+  },
+  "spanish_detalle": [
+    {
+      "nota": "Ejemplo del prototipo (banco falso)",
+      "real": 1,
+      "prob": 0.992
+    },
+    {
+      "nota": "Captura del Hito 2",
+      "real": 1,
+      "prob": 0.994
+    },
+    {
+      "nota": "Phishing bien escrito que las reglas no detectaban",
+      "real": 1,
+      "prob": 0.987
+    },
+    {
+      "nota": "Suplantación de nómina",
+      "real": 1,
+      "prob": 0.996
+    },
+    {
+      "nota": "Paquete falso con enlace acortado",
+      "real": 1,
+      "prob": 0.996
+    },
+    {
+      "nota": "Suscripción falsa",
+      "real": 1,
+      "prob": 0.977
+    },
+    {
+      "nota": "Fraude del jefe",
+      "real": 1,
+      "prob": 0.997
+    },
+    {
+      "nota": "Correo con IP",
+      "real": 1,
+      "prob": 0.992
+    },
+    {
+      "nota": "Entidad del Estado falsa",
+      "real": 1,
+      "prob": 0.996
+    },
+    {
+      "nota": "Documento compartido falso",
+      "real": 1,
+      "prob": 0.963
+    },
+    {
+      "nota": "Estafa de inversión sin enlace",
+      "real": 1,
+      "prob": 0.997
+    },
+    {
+      "nota": "Factura falsa que pide llamar",
+      "real": 1,
+      "prob": 0.995
+    },
+    {
+      "nota": "Captura del Hito 2",
+      "real": 0,
+      "prob": 0.977
+    },
+    {
+      "nota": "Aviso real del banco (falso positivo de las reglas)",
+      "real": 0,
+      "prob": 0.995
+    },
+    {
+      "nota": "Aviso de una profesora",
+      "real": 0,
+      "prob": 0.994
+    },
+    {
+      "nota": "Envío real sin enlace",
+      "real": 0,
+      "prob": 0.993
+    },
+    {
+      "nota": "Factura de servicio",
+      "real": 0,
+      "prob": 0.995
+    },
+    {
+      "nota": "Correo familiar",
+      "real": 0,
+      "prob": 0.995
+    },
+    {
+      "nota": "Aviso de la universidad",
+      "real": 0,
+      "prob": 0.996
+    },
+    {
+      "nota": "Cita médica",
+      "real": 0,
+      "prob": 0.997
+    },
+    {
+      "nota": "Código de verificación legítimo",
+      "real": 0,
+      "prob": 0.988
+    },
+    {
+      "nota": "Correo de trabajo",
+      "real": 0,
+      "prob": 0.994
+    },
+    {
+      "nota": "Boletín",
+      "real": 0,
+      "prob": 0.997
+    },
+    {
+      "nota": "Mensaje de amigos",
+      "real": 0,
+      "prob": 0.981
+    }
+  ],
+  "historial": {
+    "accuracy": [
+      0.9094,
+      0.9744,
+      0.991
+    ],
+    "loss": [
+      0.2364,
+      0.0618,
+      0.029
+    ],
+    "precision": [
+      0.8864,
+      0.9674,
+      0.9889
+    ],
+    "recall": [
+      0.9393,
+      0.9818,
+      0.9933
+    ],
+    "val_accuracy": [
+      0.982,
+      0.9837,
+      0.9837
+    ],
+    "val_loss": [
+      0.0537,
+      0.0542,
+      0.0545
+    ],
+    "val_precision": [
+      0.9871,
+      0.9793,
+      0.9849
+    ],
+    "val_recall": [
+      0.9768,
+      0.9884,
+      0.9826
+    ]
+  },
+  "epocas": 3
+}
