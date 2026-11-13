@@ -52,7 +52,19 @@ def untie(src, dst):
         model.config.tie_word_embeddings = False
     shutil.rmtree(dst, ignore_errors=True)
     model.save_pretrained(dst, safe_serialization=True)
-    AutoTokenizer.from_pretrained(src).save_pretrained(dst)
+    # El tokenizador se copia tal cual: si lo guardó transformers 5, transformers 4 (el que usa
+    # optimum) no lo puede cargar porque extra_special_tokens viene como lista.
+    for f in Path(src).iterdir():
+        if f.name.startswith(("tokenizer", "vocab", "merges", "special_tokens", "added_tokens", "chat_template")):
+            shutil.copy(f, Path(dst) / f.name)
+    cfg_path = Path(dst) / "tokenizer_config.json"
+    cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
+    extra = cfg.get("extra_special_tokens")
+    if isinstance(extra, list):
+        cfg.pop("extra_special_tokens")
+        cfg.setdefault("additional_special_tokens", extra)
+        cfg_path.write_text(json.dumps(cfg, ensure_ascii=False, indent=2), encoding="utf-8")
+    AutoTokenizer.from_pretrained(dst)  # comprobar que ahora sí carga
 
 
 def main():
