@@ -128,15 +128,29 @@ uno de un profesor, recetas, plata entre familia, avisos reales de bancos. Se hi
 - **Combinador** (`shield_core/combine.py`): una regresión logística decide con la BiLSTM y las
   señales de las reglas. Las señales de riesgo solo pueden subir la probabilidad.
 
-| Prueba | Resultado |
-|---|---|
-| Prueba general (2584 correos, inglés y español traducido) | 98.3% |
-| Español escrito a mano (125 correos, usada para ajustar) | 94.4% (2 falsas alarmas, 5 phishing que se escapan) |
-| **Prueba ciega en español** (40 correos escritos antes de ver resultados, usada una vez) | **90%: 0 falsas alarmas en 20 legítimos, 16 de 20 phishing detectados** |
-| Phishing en español disfrazado | 94% detectado |
+- **Reglas de casos frecuentes**: alguien conocido que escribe desde otro número o cuenta y pide plata,
+  trabajos o plata fácil que cobran por empezar, y cobros pequeños para liberar un paquete.
+- **Combinaciones decisivas**: combinaciones de señales que casi nunca tiene un correo legítimo
+  (por ejemplo, conocido desde otro número + pide plata) marcan el correo aunque la LSTM dude. Solo
+  se usan las que activan a lo sumo el 0.2% de los legítimos de validación.
+- **Recomendaciones según el caso**: llamar al familiar al número de siempre, entrar a la app
+  oficial del banco o llamar al número de la tarjeta, revisar el pedido en la app de la tienda,
+  consultar la página .gov.co de la entidad, no pagar por ofertas de trabajo.
 
-En la prueba ciega se escaparon: un falso familiar que pide plata, una oferta falsa de trabajo
-por dar likes, un reenvío falso de Amazon y una contraseña escrita con números por letras.
+Cada prueba ciega se escribió antes de ver resultados y se usó una sola vez, con la versión que
+había en ese momento:
+
+| Prueba | Versión | Resultado |
+|---|---|---|
+| Prueba ciega 1 (40 correos) | LSTM + señales | 90%: 0 falsas alarmas, 16 de 20 phishing |
+| Prueba ciega 2 (40 correos) | + reglas de suplantación | 85%: 4 falsas alarmas, 18 de 20 phishing |
+| **Prueba ciega 3 (30 correos)** | **+ combinaciones decisivas (actual)** | **100%: 0 falsas alarmas, 15 de 15 phishing** |
+| Español escrito a mano (125, usada para ajustar) | actual | 95.2% |
+| Phishing en español disfrazado | actual | 98% |
+| Prueba general (2584 correos) | actual | 97.5% (LSTM sola: 98.5%) |
+
+El costo: en la prueba general el combinador marca más correos legítimos generados con IA (que
+hablan mucho de cuentas y contraseñas): 46 falsas alarmas de 1291, contra 19 de la LSTM sola.
 
 ## Limitaciones
 

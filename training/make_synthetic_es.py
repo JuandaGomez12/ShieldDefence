@@ -561,10 +561,54 @@ def l_banco_aviso():
         firma=R.choice([b, f"{b} Colombia", f"Servicio al cliente {b}"]))
 
 
-LEGIT += [l_banco_aviso, l_plata_familia, l_personal, l_comunidad, l_entidad, l_seguridad_interna, l_promo, l_trabajo_corto]
-LEGIT_W += [10, 12, 12, 6, 8, 4, 6, 8]
-PHISH += [p_bono, p_factura_llamar, p_datos_discretos]
-PHISH_W += [8, 7, 7]
+def p_conocido():
+    """Alguien que dice ser un familiar o amigo, escribe desde otro número o cuenta y pide plata."""
+    quien = R.choice(["tu hijo", "tu hija", "tu sobrino", "tu prima", "tu hermano", "tu amiga", "tu compañero de trabajo", ""])
+    return armar(frases(
+        [f"Soy {quien}, " if quien else "", ""],
+        ["te escribo desde otro número porque el mío se mojó.", "este es mi número nuevo, el otro me lo robaron en el bus.",
+         "estoy usando el celular de un amigo porque perdí el mío.", "cambié de número, guárdalo así.",
+         "me robaron el teléfono y te escribo desde el correo de una amiga.", "se me dañó el celular y estoy en uno prestado."],
+        [f"¿Me puedes transferir {plata()} hoy? Te los devuelvo mañana.", f"Necesito que me prestes {plata()} para una urgencia.",
+         f"Hazme una consignación de {plata()} a esta cuenta que es de un amigo.", f"¿Me pasas {plata()} por Nequi? Es urgente."],
+        ["No llames a nadie que se preocupan.", "Ahorita no puedo hablar, después te explico.", "Es un favor rapidito.", ""]),
+        firma=R.choice([nombre(), ""]))
+
+
+def l_numero_nuevo():
+    """Avisos reales de número nuevo: no piden plata."""
+    return armar(frases(
+        ["Este es mi número nuevo, guárdalo.", "Cambié de operador y ahora tengo otro número.",
+         "Me robaron el celular, pero ya recuperé la línea con el mismo número.", "Te escribo por aquí porque se me dañó el celular."],
+        ["El otro ya no lo uso.", "Cualquier cosa me escribes a este.", "Avísales a los demás del grupo.", ""],
+        ["Un abrazo.", "Nos hablamos.", ""]), firma=nombre())
+
+
+def p_empleo_cobro():
+    """Ofertas de trabajo o negocios que cobran por empezar."""
+    return armar(frases(
+        [f"Quedó preseleccionado para un cargo con salario de {plata()}.", "Buscamos personas para digitar datos desde la casa.",
+         f"Gana {plata()} semanales armando manillas en tu tiempo libre.", "Te ofrecemos un trabajo remoto en una empresa internacional."],
+        [f"Para seguir en el proceso debe pagar {plata()} del curso de inducción.", f"El kit de inicio cuesta {plata()} y se paga por adelantado.",
+         f"Antes de firmar el contrato hay que cancelar {plata()} de la póliza.", f"Debe consignar {plata()} para la afiliación al sistema."],
+        ["Los cupos son limitados.", "Responda hoy para no perder el puesto.", ""]), firma=R.choice(["Recursos Humanos", persona(), ""]))
+
+
+def l_tramite():
+    """Trámites reales con plata o abogados: giros, cesantías, notarías, pensiones."""
+    return armar(frases(
+        [f"El retiro parcial de sus cesantías por {plata()} fue aprobado y se consignará a su cuenta registrada.",
+         "La notaría le informa que la escritura ya está lista para firmar.", f"Su abogado le envía el poder para firmar antes del {fecha()}.",
+         f"La devolución de su matrícula por {plata()} se hará a la cuenta que indicó en el formulario.",
+         f"El auxilio de transporte de {R.choice(MESES)} se pagará junto con la nómina."],
+        ["Si tiene dudas, comuníquese con la oficina en horario de atención.", "No es necesario hacer nada más.", "Lleve su documento original.", ""]),
+        firma=R.choice(["Notaría 21", "Fondo de cesantías", "Oficina jurídica", "Tesorería", persona()]))
+
+
+LEGIT += [l_numero_nuevo, l_tramite, l_banco_aviso, l_plata_familia, l_personal, l_comunidad, l_entidad, l_seguridad_interna, l_promo, l_trabajo_corto]
+LEGIT_W += [5, 8, 10, 12, 12, 6, 8, 4, 6, 8]
+PHISH += [p_bono, p_factura_llamar, p_datos_discretos, p_conocido, p_empleo_cobro]
+PHISH_W += [8, 7, 7, 10, 7]
 
 
 def generar(n, seed):

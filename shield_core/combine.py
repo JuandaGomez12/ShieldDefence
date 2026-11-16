@@ -18,9 +18,10 @@ from .signals import detect, find_urls
 
 SIGNAL_KEYS = ["mixed_domain", "brand_lookalike", "security_domain", "shortener", "odd_tld", "ip_url", "no_https",
                "urgency", "threat", "credentials", "generic_greeting", "prize", "money_request", "shared_doc",
-               "secrecy", "deadline", "click", "obfuscation"]
+               "secrecy", "deadline", "click", "obfuscation", "impersonation", "job_scam", "package_fee"]
 # Lo que hace que un correo "pida algo": si no tiene enlaces ni ninguna de estas señales, solo informa.
-REQUEST_KEYS = {"credentials", "money_request", "click", "shared_doc", "prize", "secrecy", "obfuscation"}
+REQUEST_KEYS = {"credentials", "money_request", "click", "shared_doc", "prize", "secrecy", "obfuscation",
+                "impersonation", "job_scam", "package_fee"}
 FEATURES = ["lstm_logit"] + SIGNAL_KEYS + ["n_urls", "solo_informa"]
 
 
@@ -41,6 +42,18 @@ def features(email, p_lstm, signals=None):
     return [f[k] for k in FEATURES]
 
 
+# Combinaciones de señales que casi nunca aparecen en un correo legítimo. Si el combinador las trae
+# activas (train_combiner.py solo deja las que casi ningún legítimo de validación tiene), el correo se
+# marca aunque la LSTM dude. Sirven para casos que hay pocos en los datos de entrenamiento.
+DECISIVE = [["impersonation", "money_request"], ["job_scam"], ["package_fee"], ["obfuscation", "credentials"],
+            ["brand_lookalike", "credentials"], ["mixed_domain", "credentials"], ["ip_url", "credentials"]]
+
+
+def rule_points(signals):
+    """Suma de los pesos de las señales (los mismos que se muestran en signals.py)."""
+    return sum(s.weight for s in signals)
+
+
 class Combiner:
     def __init__(self, path):
         cfg = json.load(open(path, encoding="utf-8"))
@@ -48,11 +61,21 @@ class Combiner:
         self.w = cfg["pesos"]
         self.b = cfg["sesgo"]
         self.threshold = cfg["umbral"]
+        # Red de seguridad: con muchas señales fuertes juntas el correo se marca aunque la LSTM dude.
+        self.floor_points = cfg.get("piso_reglas")
+        self.floor_prob = cfg.get("piso_prob", 0.9)
+        self.combos = [set(c) for c in cfg.get("combos_decisivos", [])]
 
     def prob(self, email, p_lstm, signals=None):
+        signals = detect(email) if signals is None else signals
         x = features(email, p_lstm, signals)
         z = self.b + sum(w * v for w, v in zip(self.w, x))
-        return 1 / (1 + math.exp(-z))
+        p = 1 / (1 + math.exp(-z))
+        keys = {s.key for s in signals}
+        if (self.floor_points is not None and rule_points(signals) >= self.floor_points) or \
+                any(c <= keys for c in self.combos):
+            p = max(p, self.floor_prob)
+        return p
 
     @classmethod
     def load(cls, models_dir):

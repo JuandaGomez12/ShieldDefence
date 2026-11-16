@@ -7,7 +7,8 @@
 import random
 import re
 
-from .signals import detect
+from .deobfuscate import deobfuscate
+from .signals import detect, norm
 
 SYSTEM = (
     "Eres ShieldAI, el asistente de ShieldDefence. Recibes un correo, el resultado de un "
@@ -74,6 +75,76 @@ _REC_LEGIT = [
     "Parece seguro, aunque siempre es buena idea revisar el remitente antes de abrir enlaces o adjuntos.",
     "No hace falta hacer nada especial. Aun así, nunca compartas contraseñas o códigos aunque el correo parezca real.",
 ]
+# Marcas y entidades, para decirle a la persona dónde verificar (en orden de aparición en el correo).
+_BANKS = {"bancolombia": "Bancolombia", "davivienda": "Davivienda", "nequi": "Nequi", "daviplata": "Daviplata",
+          "bbva": "BBVA", "banco de bogota": "Banco de Bogotá", "banco popular": "Banco Popular",
+          "banco de occidente": "Banco de Occidente", "colpatria": "Scotiabank Colpatria", "scotiabank": "Scotiabank Colpatria",
+          "caja social": "Banco Caja Social", "av villas": "AV Villas", "paypal": "PayPal", "visa": "Visa",
+          "mastercard": "Mastercard", "porvenir": "Porvenir", "proteccion": "Protección"}
+_SHOPS = {"amazon": "Amazon", "mercado libre": "Mercado Libre", "mercadolibre": "Mercado Libre", "dhl": "DHL",
+          "fedex": "FedEx", "servientrega": "Servientrega", "interrapidisimo": "Interrapidísimo",
+          "coordinadora": "Coordinadora", "4-72": "4-72", "rappi": "Rappi", "falabella": "Falabella", "ebay": "eBay"}
+_ACCOUNTS = {"netflix": "Netflix", "spotify": "Spotify", "gmail": "Gmail", "google": "Google", "microsoft": "Microsoft",
+             "outlook": "Outlook", "office 365": "Office 365", "onedrive": "OneDrive", "icloud": "iCloud", "apple": "Apple",
+             "facebook": "Facebook", "instagram": "Instagram", "whatsapp": "WhatsApp", "claro": "Claro",
+             "movistar": "Movistar", "tigo": "Tigo"}
+_GOV = {"dian": "la DIAN", "simit": "el SIMIT", "policia": "la Policía", "registraduria": "la Registraduría",
+        "fiscalia": "la Fiscalía", "juzgado": "el juzgado", "ministerio": "el ministerio", "eps": "tu EPS"}
+
+
+def _find_brand(text, table):
+    best = None
+    for k, name in table.items():
+        m = re.search(r"(?<![a-z0-9])" + re.escape(k) + r"(?![a-z0-9])", text)
+        if m and (best is None or m.start() < best[0]):
+            best = (m.start(), name)
+    return best[1] if best else None
+
+
+def recommendation(email, signals, is_phishing, rng=None):
+    """Recomendación según el tipo de engaño y la marca o entidad que menciona el correo."""
+    rng = rng or random.Random()
+    keys = {s.key for s in signals}
+    t = norm(deobfuscate(email)[0])
+    bank, shop = _find_brand(t, _BANKS), _find_brand(t, _SHOPS)
+    account, gov = _find_brand(t, _ACCOUNTS), _find_brand(t, _GOV)
+    if not is_phishing:
+        if keys & {"money_request", "impersonation"} or re.search(r"\b\d+ ?mil\b|\$ ?\d|\bpesos\b|\bplata\b|transferi|consign|\bnequi\b|daviplata", t):
+            return ("Parece normal. Aun así, si te piden enviar plata, confírmalo con una llamada a la persona, al número "
+                    "que ya tenías guardado, antes de hacerlo.")
+        if bank:
+            return f"Parece un aviso real. Si tienes dudas, confírmalo en la app oficial de {bank}, no desde enlaces del correo."
+        return rng.choice(_REC_LEGIT)
+    if "impersonation" in keys or ({"secrecy", "money_request"} <= keys):
+        rec = ("No envíes plata todavía. Llama a esa persona al número que ya tenías guardado (no al que aparece en el "
+               "mensaje) o pregúntale algo que solo ella sabría. Los estafadores se hacen pasar por familiares, amigos o jefes.")
+    elif "job_scam" in keys:
+        rec = ("Ninguna oferta de trabajo seria cobra por empezar, por un kit o por un examen. No pagues ni envíes tus "
+               "documentos; busca la empresa por tu cuenta y confirma si la vacante existe.")
+    elif "package_fee" in keys or (shop and not bank):
+        name = shop or "la transportadora"
+        rec = (f"No pagues nada desde este correo. Revisa el pedido entrando tú mismo a la app o página oficial de {name} "
+               "con tu número de pedido o de guía. Las transportadoras no cobran por enlaces para liberar o reenviar un paquete.")
+    elif bank:
+        donde = ("o escríbeles por los canales que aparecen dentro de la app" if bank in ("Nequi", "Daviplata")
+                 else "o llama al número que aparece detrás de tu tarjeta")
+        rec = (f"No uses los enlaces ni respondas. Entra tú mismo a la app oficial de {bank} {donde}. "
+               f"{bank} nunca te va a pedir claves, códigos ni datos de la tarjeta por correo.")
+    elif account:
+        rec = (f"No escribas tu contraseña desde este enlace. Abre tú mismo la app o la página oficial de {account} y revisa "
+               "si hay algún aviso en tu cuenta. Si ya escribiste tu clave, cámbiala de inmediato.")
+    elif gov:
+        rec = (f"Consulta directamente en la página oficial de {gov} (las de entidades del Estado terminan en .gov.co) o en "
+               "sus líneas oficiales. Las entidades no envían multas, embargos ni citaciones con enlaces para pagar.")
+    elif keys & {"money_request", "secrecy"}:
+        rec = rng.choice(_REC_MONEY)
+    else:
+        rec = rng.choice(_REC_PHISH)
+    if "obfuscation" in keys:
+        rec += " Además, el correo disfraza palabras para evadir filtros: eso por sí solo es una mala señal."
+    return rec
+
+
 def _legit_points(email, signals):
     """Solo afirma lo que es cierto según las señales del correo."""
     keys = {s.key for s in signals}
@@ -97,7 +168,6 @@ def template_explanation(email: str, is_phishing: bool, prob: float, signals=Non
         points = [f"{s.title}: {s.detail}" for s in sorted(signals, key=lambda s: -s.weight)[:5]]
         if not points:
             points = ["El estilo y lo que pide el correo se parecen a los correos de phishing con los que se entrenó el modelo."]
-        rec = rng.choice(_REC_MONEY if any(s.key in ("money_request", "secrecy") for s in signals) else _REC_PHISH)
     else:
         opening = rng.choice(_OPEN_LEGIT) if not signals else (
             "El clasificador considera que este correo es legítimo, aunque tiene algunos detalles que conviene revisar.")
@@ -106,7 +176,7 @@ def template_explanation(email: str, is_phishing: bool, prob: float, signals=Non
         for s in sorted(signals, key=lambda s: -s.weight)[:2]:
             points.append(f"Tiene un detalle a revisar ({s.title.lower()}: \"{s.evidence}\"), pero el modelo no lo "
                           "considera suficiente para decir que es fraude.")
-        rec = rng.choice(_REC_LEGIT)
+    rec = recommendation(email, signals, is_phishing, rng)
     return {"explicacion": opening, "senales": points, "recomendacion": rec}
 
 

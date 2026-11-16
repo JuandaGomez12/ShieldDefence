@@ -1,0 +1,31 @@
+text,label,note,categoria
+"Hola, buenas. Este es mi número nuevo, el anterior lo cancelé porque cambié de operador. Guárdalo, por favor. Saludos, Felipe",0,Aviso real de número nuevo,personal
+"Mija, ya le giré los 300 mil del semestre de inglés a la cuenta que me pasó. Me manda el recibo cuando pague. Besos, papá",0,Papá gira plata del curso,plata_familia
+Buenos días. Le informamos que el abogado asignado a su proceso de sucesión es el doctor Ramírez. Puede comunicarse con él en el horario de oficina para agendar la primera reunión. Notaría 12,0,Notaría asigna abogado,salud_gobierno
+"Hola, ¿cómo vas? Ya llegó tu paquete a la portería del edificio; lo recibió don Jorge. Pasa por él cuando llegues.",0,Vecino avisa de un paquete,personal
+Buenas tardes. Su solicitud de crédito educativo con el ICETEX fue aprobada. El giro a la universidad se realizará antes del inicio de clases. Puede consultar el estado en la página oficial.,0,Crédito ICETEX aprobado,banco_real
+"Hola equipo, buen día. Les cuento que abrimos una vacante de practicante en el área de datos. Si conocen a alguien, que me envíe la hoja de vida antes del viernes.",0,Vacante real de practicante,empleo
+Buenos días. La EPS le informa que la autorización para su resonancia magnética fue aprobada. Puede agendar la cita en la IPS asignada.,0,Autorización de examen médico,salud_gobierno
+"Hola mamá, ¿me puedes recoger el sábado en el aeropuerto? Llego a las 4 en el vuelo de Avianca. Te quiero.",0,Hija pide que la recojan,personal
+"Buenas. Tu compra en Falabella fue despachada con Coordinadora, guía 55801234. Puedes rastrearla en la página de la transportadora.",0,Despacho real de Falabella,compras
+Buenos días. El banco le informa que su clave temporal para el primer ingreso a la app es la que recibió en el sobre sellado en la oficina. Cámbiela apenas ingrese.,0,Clave temporal entregada en oficina,banco_real
+"Hola Caro, ¿me prestas los apuntes de Estadística de la semana pasada? Te los devuelvo mañana en clase.",0,Compañera pide apuntes,universidad
+"Buenas tardes. Para su jubilación, le recordamos que debe radicar los documentos en Colpensiones antes del 15 de diciembre. Puede agendar cita en la página oficial.",0,Trámite de pensión,salud_gobierno
+"Hola, buenos días. Te escribo porque me salió un trabajo de medio tiempo en una cafetería y no voy a poder ir los martes al grupo de estudio. ¿Podemos cambiar el día?",0,Estudiante cambia el grupo de estudio,universidad
+"Buenas noches, tío. Muchas gracias por el regalo de grado. Ya me llegó la plata que me mandó; la voy a usar para el computador nuevo.",0,Sobrino agradece un regalo,plata_familia
+Buenos días. Le confirmamos que su viaje en bus de Bogotá a Medellín sale el viernes a las 10 p. m. desde el módulo 4 de la terminal. Llegue 30 minutos antes.,0,Tiquete de bus,compras
+"Hola, ¿cómo está? Le escribe su hija desde otro celular, el mío se me dañó. Necesito que me haga una consignación de 650 mil hoy para pagar un arreglo, después le explico. No me llame que estoy en clase.",1,Hija falsa desde otro celular,suplantacion_conocido
+"Buenas, compadre. Perdí mi celular y estoy usando el de un amigo. Tengo una urgencia con el carro y necesito que me prestes 400 mil. Mañana sin falta te los devuelvo.",1,Compadre falso pide préstamo,suplantacion_conocido
+"Felicitaciones, fue seleccionado para trabajar como asesor virtual. Pago de 250.000 diarios. Para iniciar debe cancelar 80.000 de la inscripción en la plataforma.",1,Asesor virtual falso,empleo_falso
+Coordinadora: su envío tiene un costo pendiente de 3.200 pesos por cambio de dirección. Páguelo en https://coordinadora-envios.pagos-co.top para recibirlo hoy.,1,Coordinadora falsa,paquete_falso
+Davivienda: detectamos un ingreso no autorizado. Valide su usuario y clave de inmediato en http://davivienda-seguridad.web-validar.com o su cuenta quedará bloqueada.,1,Davivienda falsa,phishing_banco
+"Hola, soy el abogado de su tío fallecido en España. Usted es el único heredero de 350.000 euros. Para iniciar el trámite debe enviar copia de su cédula y pagar los gastos notariales.",1,Herencia falsa,phishing_otros
+Buenos días. Le escribimos de la DIAN. Tiene un saldo a favor de 1.250.000 pesos. Para recibir la devolución confirme su cuenta bancaria y clave en https://dian-devoluciones.info,1,Devolución falsa de la DIAN,phishing_otros
+"Querido usuario de Instagram, su cuenta será eliminada por violar derechos de autor. Apele aquí en las próximas 24 horas: http://instagram-apelaciones.click",1,Instagram falso,phishing_cuenta
+"Hola, buenos días. Soy de la empresa de mudanzas que contrataste. Para confirmar la fecha necesitamos un anticipo de 200 mil a esta cuenta de Nequi, porque el pago por la página está fallando.",1,Mudanza falsa pide anticipo,phishing_sutil
+Buenas tardes. Le informamos que fue beneficiado con un subsidio de vivienda. Para el desembolso debe pagar el estudio del crédito de 150.000 a la cuenta que le indicaremos.,1,Subsidio de vivienda falso,phishing_otros
+Tu c-u-e-n-t-a de Mercado Pago fue r-e-s-t-r-i-n-g-i-d-a. Ingresa tu c l a v e en https://mercadopago-seguro.live,1,Mercado Pago disfrazado,phishing_disfrazado
+"Estimado cliente, su tarjeta Visa tiene una compra sospechosa de 3.400.000. Si no la reconoce, responda este correo con el número de la tarjeta, la fecha de vencimiento y el código de seguridad.",1,Visa falsa pide datos,phishing_banco
+"Hola amor, se me descargó el celular y te escribo desde el de una compañera. ¿Me puedes pasar 150 mil a esta cuenta de Daviplata? Es urgente, ahorita te explico.",1,Pareja falsa desde otro celular,suplantacion_conocido
+Buenos días. Gane dinero invirtiendo en criptomonedas con nuestro robot de inteligencia artificial. Ganancias garantizadas del 15% semanal. Solo necesita un depósito inicial de 300.000.,1,Robot de inversión falso,empleo_falso
+4-72: su paquete internacional está retenido. Pague el impuesto de importación de 18.500 pesos en http://472-aduana.com/pagar,1,4-72 falso,paquete_falso

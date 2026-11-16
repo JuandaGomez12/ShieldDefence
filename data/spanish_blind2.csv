@@ -1,0 +1,41 @@
+text,label,note,categoria
+"Mamá, ¿me puedes pasar 50 mil para el bus y el almuerzo de esta semana? Me pagan el viernes y te los devuelvo. Gracias, te quiero.",0,Hijo real pide plata para el bus,plata_familia
+"Hola tío, buenas tardes. Le escribo porque mi papá me dijo que usted tiene el número del abogado que le ayudó con lo de la casa. ¿Me lo puede pasar? Gracias.",0,Sobrino pide un número de teléfono,personal
+"Juan, ya llegó el recibo del arriendo de diciembre: 1.200.000. Te toca la mitad, me la pasas cuando puedas. Te dejo el recibo en la nevera.",0,Compañero de apartamento reparte el arriendo,plata_familia
+"Buenas tardes, Laura. Te escribimos de Talento Humano de Grupo Éxito. Revisamos tu hoja de vida y queremos invitarte a una entrevista para el cargo de auxiliar contable el martes 24 a las 9 a. m. en la sede de Envigado. Trae tu cédula.",0,Invitación real a entrevista,empleo
+"Hola, ¿qué tal? Vi que buscas monitores para el semestre. Me interesa la monitoría de Cálculo; adjunto mi hoja de vida y mi historia académica. Quedo atento.",0,Estudiante aplica a monitoría,empleo
+"Buenos días. Tu pedido de Amazon con los audífonos ya salió de la bodega. Puedes seguir el envío en la app de Amazon, en Mis pedidos. Entrega estimada: jueves 19.",0,Aviso real de envío de Amazon,compras
+"Hola, buenas tardes. Interrapidísimo le informa que su envío 240019874 llegó a la oficina de Chapinero porque no había nadie en la dirección. Puede reclamarlo con su cédula hasta el sábado.",0,Paquete real en oficina,compras
+Buenos días. Bancolombia le informa que su tarjeta de crédito terminada en 4410 fue bloqueada temporalmente porque se ingresó la clave errada tres veces en un cajero. Para desbloquearla acérquese a una sucursal con su documento.,0,Bloqueo real de tarjeta en cajero,banco_real
+"Hola, buenas noches. Te cuento que ya te consigné lo de la cuota de la natilla de la novena, 30 mil. Mañana llevo los buñuelos.",0,Cuota de la novena,plata_familia
+"Buenos días, señora Martha. Le escribe la directora de curso de Sofía. La niña dejó la chaqueta en el salón; se la guardé en coordinación. Puede recogerla mañana.",0,Profesora avisa de una chaqueta,personal
+Hola a todos. El sábado es el bazar del colegio; la boleta cuesta 15 mil e incluye almuerzo. Pueden pagarla con la tesorera del curso. ¡Los esperamos!,0,Bazar del colegio,personal
+Buenos días. Mercado Libre: tu reembolso por la devolución del producto ya se aprobó. Verás el dinero en tu cuenta de Mercado Pago en las próximas horas.,0,Reembolso real de Mercado Libre,compras
+Buenas tardes. Le recordamos que la factura de Claro de este mes ya está disponible. Puede pagarla desde la app Mi Claro o en los puntos autorizados.,0,Factura real de Claro,compras
+"Buenos días, equipo. Mañana llega el auditor de la ISO a las 8. Por favor tengan los procedimientos impresos y las carpetas en orden. Gracias.",0,Visita del auditor,trabajo
+"Hola Pipe, ¿me prestas el disco duro externo para pasar las fotos del paseo? Te lo devuelvo el lunes en la oficina.",0,Compañero pide prestado un disco,trabajo
+Buenos días. Le informamos que su solicitud de cesantías fue aprobada. El dinero será girado a la cuenta que registró en el formulario en los próximos 3 días hábiles. Porvenir,0,Retiro de cesantías aprobado,banco_real
+"Hola, buenos días. Recuerda que hoy a las 4 p. m. es la reunión virtual del semillero de investigación. El enlace de Teams es el mismo de siempre.",0,Reunión del semillero,universidad
+"Buenas tardes. Su certificado de notas del semestre ya está listo. Puede descargarlo desde el sistema académico, sección Certificados, sin costo.",0,Certificado de notas,universidad
+"Hola amor, se me quedó la billetera en la casa. ¿Me haces el favor de transferirme 40 mil a Nequi para el taxi? Esta noche te cuento cómo me fue.",0,Pareja pide plata para el taxi,plata_familia
+"Buenos días. La Secretaría de Salud invita a la jornada de vacunación de mascotas este sábado en el parque principal, de 8 a. m. a 2 p. m. Es gratuita.",0,Vacunación de mascotas,salud_gobierno
+"Hola mamá, este es mi número nuevo, el otro se me cayó al agua. Guárdalo. Oye, necesito un favor urgente: tengo que pagar una cuenta hoy y no me deja entrar a mi banco desde este celular. ¿Me puedes transferir 750 mil? Mañana te los devuelvo.",1,Hijo falso con número nuevo,suplantacion_conocido
+"Hola tía, soy Camila. Me robaron el celular y estoy escribiendo desde el correo de una amiga. Estoy varada en la terminal sin plata. ¿Me puedes consignar 300 mil a esta cuenta de Bancolombia que es de mi amiga? Por favor no llames a mi mamá que se preocupa.",1,Sobrina falsa varada,suplantacion_conocido
+"Buenas, primo. Ando en una emergencia médica y necesito completar para la clínica. ¿Me puedes prestar 1.500.000? Te paso la cuenta. Es urgente, no puedo hablar ahora.",1,Primo falso con emergencia médica,suplantacion_conocido
+"Hola, soy Andrés, tu compañero del trabajo. Te escribo de otro número porque perdí el mío. ¿Me ayudas con 200 mil por Nequi? Te los pago el lunes en la oficina.",1,Compañero falso con número nuevo,suplantacion_conocido
+Buenos días. Buscamos personas para trabajar desde casa empacando productos. Ganarás 1.800.000 pesos semanales sin experiencia. Para enviarte el material debes pagar el kit de 120.000 pesos.,1,Trabajo falso de empacar productos,empleo_falso
+"Hola, ¿te interesa ganar dinero extra? Solo tienes que calificar hoteles en Google y te pagamos 15.000 por cada reseña. Para activar tu cuenta haz un primer depósito de 50.000 y te lo devolvemos con ganancias.",1,Tareas pagadas falsas,empleo_falso
+Buenas tardes. Fue preseleccionado para un empleo en una multinacional con salario de 4.500.000. Para continuar el proceso debe pagar 95.000 por el examen médico en el laboratorio que le indicaremos.,1,Empleo falso que cobra examen médico,empleo_falso
+Amazon: tu paquete está retenido en aduana. Paga el impuesto de 12.900 pesos en https://amazon-aduana-co.com/pago para que sea entregado mañana.,1,Aduana falsa de Amazon,paquete_falso
+Servientrega: no pudimos entregar su envío. Pague $2.990 por la reprogramación en http://servientrega.reprogramar-envio.xyz antes de 24 horas o será devuelto.,1,Reprogramación falsa de Servientrega,paquete_falso
+DHL Express: su paquete tiene un saldo pendiente de envío. Complete el pago con su tarjeta en https://dhl-pagos.web.app/envio para recibirlo.,1,Saldo pendiente falso de DHL,paquete_falso
+"Bancolombia: Su tarjeta fue bloqueada por seguridad. Para desbloquearla confirme su usuario, clave y número de tarjeta en https://bancolombia-desbloqueo.com/personas",1,Bloqueo falso de Bancolombia,phishing_banco
+Amazon: hubo un problema con el método de pago de tu cuenta. Actualiza tu tarjeta en http://amazon-cuenta-segura.info/actualizar para evitar la cancelación de tus pedidos.,1,Pago falso de Amazon,phishing_cuenta
+"Hola, buenos días. Su cuenta de WhatsApp será cerrada por uso indebido. Para evitarlo verifique su número en http://whatsapp-verificar.top e ingrese el código que le llegará por SMS.",1,Cierre falso de WhatsApp,phishing_cuenta
+"Querido cliente, Nequi le regala 100 mil pesos por la temporada navideña. Ingrese su número y clave en https://nequi-navidad.click para recibirlos hoy.",1,Regalo falso de Nequi,phishing_banco
+"Hola, ¿cómo estás? Soy la nueva asistente de gerencia. El gerente me pidió que le consigas 5 tarjetas de regalo de Amazon de 200 mil para unos clientes. Mándame las fotos de los códigos por aquí, él está en reunión.",1,Asistente falsa pide tarjetas de regalo,fraude_jefe
+Estimado usuario: Su cuenta de correo superó el límite de almacenamiento. Haga clic en http://correo-espacio.live y confirme su contraseña para ampliar su buzón.,1,Buzón lleno falso,phishing_cuenta
+"H0la, s0y del b4nc0. Tu cuent4 fue bl0que4da. C0nfirm4 tu cl4ve en http://banco-ayuda.top",1,Banco falso con números por letras,phishing_disfrazado
+"Mamá, este es mi n u e v o número. Necesito que me t r a n s f i e r a s 500 mil urgente, ya te explico.",1,Hijo falso con letras separadas,phishing_disfrazado
+Su ра quete de Аmazon está retenido. Pague el envío en http://amazon-envios.site,1,Amazon falso con letras cirílicas,phishing_disfrazado
+Tu c​ontraseña de Netflix ve​nce hoy. Actualízala en https://netflix-cuenta.live,1,Netflix falso con invisibles,phishing_disfrazado
