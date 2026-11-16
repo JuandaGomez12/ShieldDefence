@@ -199,7 +199,7 @@ const TEXT_RULES = [
     /has ganado|ha ganado|premio|sorteo|herencia|reembolso|devolucion|saldo a favor|regalo gratis|you (have )?won|winner|lottery|prize|inheritance|refund|compensation|claim your/,
     (e) => `ofrece dinero o premios inesperados ("${e}") para llamar la atención.`],
   ["money_request", "Pide mover dinero", 20, false,
-    /tarjetas? de regalo|gift ?cards?|transferi\w*|consigna\w*|western union|moneygram|bitcoin|criptomoneda\w*|wire transfer|send (the )?money|bank transfer|ganancias? .{0,20}garantizad\w*|guaranteed (returns?|profit)|million (dollars|usd)|\$ ?\d[\d.,]* (million|millones)/,
+    /tarjetas? de regalo|gift ?cards?|transferi\w*|transfier\w*|consigna\w*|consigne\w*|\bprest(ar|ame|arme|as)\b|western union|moneygram|bitcoin|criptomoneda\w*|wire transfer|send (the )?money|bank transfer|ganancias? .{0,20}garantizad\w*|guaranteed (returns?|profit)|million (dollars|usd)|\$ ?\d[\d.,]* (million|millones)/,
     (e) => `busca que la persona envíe dinero, compre algo o invierta ("${e}").`],
   ["shared_doc", "Documento compartido con enlace externo", 15, true,
     /(te|le|les) (comparto|compartio|ha compartido|envio) .{0,25}?(archivo|documento|formato|enlace|factura)|documento compartido|shared (a )?(file|document) with you|has shared|view (the )?document|inicia sesion con tu cuenta|sign in to (view|access)/,
@@ -257,6 +257,19 @@ export function detect(text) {
   for (const [key, ttl, weight, needsUrl, rx, detail] of TEXT_RULES) {
     const ev = first(rx, t);
     if (ev && (!needsUrl || urls.length)) add(key, ttl, detail(ev), weight, ev);
+  }
+  let ev = first(/(este es|te escribo (desde|de)|escribiendo desde) (mi |el |un |otro )?(otro |nuevo )?numero( nuevo)?|cambie de (numero|celular)|numero nuevo|nuevo numero|me robaron (el|mi) (celular|telefono)|se me (dano|perdio|cayo|mojo) (el|mi) (celular|telefono)|perdi (el|mi) (celular|telefono|numero)|(correo|celular|telefono) de (una|un) (amiga|amigo)|no (le )?(llames|digas|cuentes) a (mi|nadie)|(lost|broke) my phone|(this is|from) my new number/, t);
+  if (ev) add("impersonation", "Dice ser un conocido desde otro número o cuenta",
+    `se presenta como alguien que conoces pero escribiendo desde otro número o cuenta ("${ev}"), ` +
+    "el truco más común para pedir plata haciéndose pasar por un familiar o amigo.", 25, ev);
+  ev = first(/trabaj\w* desde (la )?casa|ganar(a|as|an|ás)? (desde |entre |hasta )?\$? ?[\d.,]+ ?(mil |millones? )?(pesos )?(diarios|semanales|mensuales|al dia|a la semana|al mes|por cada)|kit de (inscripcion|trabajo|inicio)|(primer |un )?deposito inicial|primer deposito|(pagar|pague|paga) (el|un|la) (kit|examen|curso|registro|membresia|inscripcion)|calificar (hoteles|productos|videos|restaurantes)|d(ar|ando) likes|work from home|earn \$?\d+ (per|a) (day|week)/, t);
+  if (ev) add("job_scam", "Trabajo o ganancia fácil que cobra por empezar",
+    `ofrece trabajo o plata fácil ("${ev}"); las ofertas serias no cobran por empezar ni prometen ganancias así.`, 20, ev);
+  ev = first(/(paquete|envio|aduana|entrega|pedido)\b.{0,80}?(pague|pagar|paga|arancel|impuesto|saldo pendiente|gastos de (envio|reenvio)|reprogramacion)|(pague|paga|pagar|arancel|impuesto) .{0,60}?(paquete|envio|aduana|entrega)/, t);
+  if (ev && urls.length) {
+    const e60 = ev.slice(0, 60);
+    add("package_fee", "Cobra por liberar o reenviar un paquete",
+      `pide pagar un valor pequeño por un envío ("${e60}") en un enlace; las transportadoras no cobran así.`, 20, e60);
   }
   if (deob.tricks.size) {
     const keys = [...deob.tricks].sort();
@@ -328,14 +341,70 @@ function legitPoints(email, signals) {
 }
 
 /** Explicación por plantilla: se muestra al instante y es el respaldo si el LLM no está. */
+const BANKS = { bancolombia: "Bancolombia", davivienda: "Davivienda", nequi: "Nequi", daviplata: "Daviplata", bbva: "BBVA",
+  "banco de bogota": "Banco de Bogotá", "banco popular": "Banco Popular", "banco de occidente": "Banco de Occidente",
+  colpatria: "Scotiabank Colpatria", scotiabank: "Scotiabank Colpatria", "caja social": "Banco Caja Social",
+  "av villas": "AV Villas", paypal: "PayPal", visa: "Visa", mastercard: "Mastercard", porvenir: "Porvenir", proteccion: "Protección" };
+const SHOPS = { amazon: "Amazon", "mercado libre": "Mercado Libre", mercadolibre: "Mercado Libre", dhl: "DHL", fedex: "FedEx",
+  servientrega: "Servientrega", interrapidisimo: "Interrapidísimo", coordinadora: "Coordinadora", "4-72": "4-72",
+  rappi: "Rappi", falabella: "Falabella", ebay: "eBay" };
+const ACCOUNTS = { netflix: "Netflix", spotify: "Spotify", gmail: "Gmail", google: "Google", microsoft: "Microsoft",
+  outlook: "Outlook", "office 365": "Office 365", onedrive: "OneDrive", icloud: "iCloud", apple: "Apple",
+  facebook: "Facebook", instagram: "Instagram", whatsapp: "WhatsApp", claro: "Claro", movistar: "Movistar", tigo: "Tigo" };
+const GOV = { dian: "la DIAN", simit: "el SIMIT", policia: "la Policía", registraduria: "la Registraduría",
+  fiscalia: "la Fiscalía", juzgado: "el juzgado", ministerio: "el ministerio", eps: "tu EPS" };
+
+function findBrand(text, table) {
+  let best = null;
+  for (const [k, name] of Object.entries(table)) {
+    const m = new RegExp("(?<![a-z0-9])" + k.replace(/[.*+?^${}()|[\]\\-]/g, "\\$&") + "(?![a-z0-9])").exec(text);
+    if (m && (best === null || m.index < best[0])) best = [m.index, name];
+  }
+  return best ? best[1] : null;
+}
+
+/** Recomendación según el tipo de engaño y la marca o entidad del correo (igual que explain.py). */
+export function recommendation(email, signals, isPhishing) {
+  const keys = new Set(signals.map((s) => s.key));
+  const t = norm(deobfuscate(email).text);
+  const bank = findBrand(t, BANKS), shop = findBrand(t, SHOPS), account = findBrand(t, ACCOUNTS), gov = findBrand(t, GOV);
+  if (!isPhishing) {
+    if (keys.has("money_request") || keys.has("impersonation") || /\b\d+ ?mil\b|\$ ?\d|\bpesos\b|\bplata\b|transferi|consign|\bnequi\b|daviplata/.test(t)) {
+      return "Parece normal. Aun así, si te piden enviar plata, confírmalo con una llamada a la persona, al número que ya tenías guardado, antes de hacerlo.";
+    }
+    if (bank) return `Parece un aviso real. Si tienes dudas, confírmalo en la app oficial de ${bank}, no desde enlaces del correo.`;
+    return pick(REC_LEGIT);
+  }
+  let rec;
+  if (keys.has("impersonation") || (keys.has("secrecy") && keys.has("money_request"))) {
+    rec = "No envíes plata todavía. Llama a esa persona al número que ya tenías guardado (no al que aparece en el mensaje) o pregúntale algo que solo ella sabría. Los estafadores se hacen pasar por familiares, amigos o jefes.";
+  } else if (keys.has("job_scam")) {
+    rec = "Ninguna oferta de trabajo seria cobra por empezar, por un kit o por un examen. No pagues ni envíes tus documentos; busca la empresa por tu cuenta y confirma si la vacante existe.";
+  } else if (keys.has("package_fee") || (shop && !bank)) {
+    rec = `No pagues nada desde este correo. Revisa el pedido entrando tú mismo a la app o página oficial de ${shop || "la transportadora"} con tu número de pedido o de guía. Las transportadoras no cobran por enlaces para liberar o reenviar un paquete.`;
+  } else if (bank) {
+    const donde = bank === "Nequi" || bank === "Daviplata" ? "o escríbeles por los canales que aparecen dentro de la app" : "o llama al número que aparece detrás de tu tarjeta";
+    rec = `No uses los enlaces ni respondas. Entra tú mismo a la app oficial de ${bank} ${donde}. ${bank} nunca te va a pedir claves, códigos ni datos de la tarjeta por correo.`;
+  } else if (account) {
+    rec = `No escribas tu contraseña desde este enlace. Abre tú mismo la app o la página oficial de ${account} y revisa si hay algún aviso en tu cuenta. Si ya escribiste tu clave, cámbiala de inmediato.`;
+  } else if (gov) {
+    rec = `Consulta directamente en la página oficial de ${gov} (las de entidades del Estado terminan en .gov.co) o en sus líneas oficiales. Las entidades no envían multas, embargos ni citaciones con enlaces para pagar.`;
+  } else if (keys.has("money_request") || keys.has("secrecy")) {
+    rec = pick(REC_MONEY);
+  } else {
+    rec = pick(REC_PHISH);
+  }
+  if (keys.has("obfuscation")) rec += " Además, el correo disfraza palabras para evadir filtros: eso por sí solo es una mala señal.";
+  return rec;
+}
+
 export function templateExplanation(email, isPhishing, prob, signals) {
   signals = signals || detect(email);
   const byWeight = [...signals].sort((a, b) => b.weight - a.weight);
   if (isPhishing) {
     let points = byWeight.slice(0, 5).map((s) => `${s.title}: ${s.detail}`);
     if (!points.length) points = ["El estilo y lo que pide el correo se parecen a los correos de phishing con los que se entrenó el modelo."];
-    const money = signals.some((s) => s.key === "money_request" || s.key === "secrecy");
-    return { explicacion: pick(signals.length ? OPEN_PHISH : OPEN_PHISH_NOSIG), senales: points, recomendacion: pick(money ? REC_MONEY : REC_PHISH) };
+    return { explicacion: pick(signals.length ? OPEN_PHISH : OPEN_PHISH_NOSIG), senales: points, recomendacion: recommendation(email, signals, true) };
   }
   const pts = legitPoints(email, signals).sort(() => Math.random() - 0.5).slice(0, 2);
   for (const s of byWeight.slice(0, 2)) {
@@ -344,7 +413,7 @@ export function templateExplanation(email, isPhishing, prob, signals) {
   return {
     explicacion: signals.length ? "El clasificador considera que este correo es legítimo, aunque tiene algunos detalles que conviene revisar." : pick(OPEN_LEGIT),
     senales: pts,
-    recomendacion: pick(REC_LEGIT),
+    recomendacion: recommendation(email, signals, false),
   };
 }
 
@@ -368,8 +437,9 @@ export function consistent(parsed, isPhishing) {
 /* ---------------- combine.py ---------------- */
 export const SIGNAL_KEYS = ["mixed_domain", "brand_lookalike", "security_domain", "shortener", "odd_tld", "ip_url",
   "no_https", "urgency", "threat", "credentials", "generic_greeting", "prize", "money_request", "shared_doc",
-  "secrecy", "deadline", "click", "obfuscation"];
-const REQUEST_KEYS = ["credentials", "money_request", "click", "shared_doc", "prize", "secrecy", "obfuscation"];
+  "secrecy", "deadline", "click", "obfuscation", "impersonation", "job_scam", "package_fee"];
+const REQUEST_KEYS = ["credentials", "money_request", "click", "shared_doc", "prize", "secrecy", "obfuscation",
+  "impersonation", "job_scam", "package_fee"];
 export const FEATURES = ["lstm_logit", ...SIGNAL_KEYS, "n_urls", "solo_informa"];
 
 function logit(p, eps = 1e-6) {
@@ -390,12 +460,17 @@ export class Combiner {
   constructor(cfg) {
     if (JSON.stringify(cfg.features) !== JSON.stringify(FEATURES)) throw new Error("combinador con otras variables");
     this.w = cfg.pesos; this.b = cfg.sesgo; this.threshold = cfg.umbral;
+    // Red de seguridad: con muchas señales fuertes juntas el correo se marca aunque la LSTM dude.
+    this.floorPoints = cfg.piso_reglas ?? null; this.floorProb = cfg.piso_prob ?? 0.9;
   }
   prob(email, pLstm, signals) {
+    signals = signals || detect(email);
     const x = combinerFeatures(email, pLstm, signals);
     let z = this.b;
     for (let i = 0; i < x.length; i++) z += this.w[i] * x[i];
-    return 1 / (1 + Math.exp(-z));
+    let p = 1 / (1 + Math.exp(-z));
+    if (this.floorPoints !== null && signals.reduce((a, s) => a + s.weight, 0) >= this.floorPoints) p = Math.max(p, this.floorProb);
+    return p;
   }
 }
 

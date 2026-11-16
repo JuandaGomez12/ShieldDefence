@@ -130,7 +130,8 @@ def detect(text: str):
     if ev:
         add("prize", "Promesa de dinero o premio",
             f"ofrece dinero o premios inesperados (\"{ev}\") para llamar la atención.", 15, ev)
-    ev = _first(r"tarjetas? de regalo|gift ?cards?|transferi\w*|consigna\w*|western union|moneygram|bitcoin|"
+    ev = _first(r"tarjetas? de regalo|gift ?cards?|transferi\w*|transfier\w*|consigna\w*|consigne\w*|"
+                r"\bprest(ar|ame|arme|as)\b|western union|moneygram|bitcoin|"
                 r"criptomoneda\w*|wire transfer|send (the )?money|bank transfer|ganancias? .{0,20}garantizad\w*|"
                 r"guaranteed (returns?|profit)|million (dollars|usd)|\$ ?\d[\d.,]* (million|millones)", t)
     if ev:
@@ -156,6 +157,32 @@ def detect(text: str):
                 r"ingresa al enlace|siguiente enlace|follow the link|revisalo (aqui|en)", t)
     if ev and find_urls(text):
         add("click", "Pide hacer clic en un enlace", f"insiste en abrir un enlace (\"{ev}\").", 5, ev)
+    ev = _first(r"(este es|te escribo (desde|de)|escribiendo desde) (mi |el |un |otro )?(otro |nuevo )?numero( nuevo)?|"
+                r"cambie de (numero|celular)|numero nuevo|nuevo numero|me robaron (el|mi) (celular|telefono)|"
+                r"se me (dano|perdio|cayo|mojo) (el|mi) (celular|telefono)|perdi (el|mi) (celular|telefono|numero)|"
+                r"(correo|celular|telefono) de (una|un) (amiga|amigo)|no (le )?(llames|digas|cuentes) a (mi|nadie)|"
+                r"(lost|broke) my phone|(this is|from) my new number", t)
+    if ev:
+        add("impersonation", "Dice ser un conocido desde otro número o cuenta",
+            f"se presenta como alguien que conoces pero escribiendo desde otro número o cuenta (\"{ev}\"), "
+            "el truco más común para pedir plata haciéndose pasar por un familiar o amigo.", 25, ev)
+    ev = _first(r"trabaj\w* desde (la )?casa|ganar(a|as|an|ás)? (desde |entre |hasta )?\$? ?[\d.,]+ ?(mil |millones? )?"
+                r"(pesos )?(diarios|semanales|mensuales|al dia|a la semana|al mes|por cada)|"
+                r"kit de (inscripcion|trabajo|inicio)|(primer |un )?deposito inicial|primer deposito|"
+                r"(pagar|pague|paga) (el|un|la) (kit|examen|curso|registro|membresia|inscripcion)|"
+                r"calificar (hoteles|productos|videos|restaurantes)|d(ar|ando) likes|"
+                r"work from home|earn \$?\d+ (per|a) (day|week)", t)
+    if ev:
+        add("job_scam", "Trabajo o ganancia fácil que cobra por empezar",
+            f"ofrece trabajo o plata fácil (\"{ev}\"); las ofertas serias no cobran por empezar ni prometen "
+            "ganancias así.", 20, ev)
+    ev = _first(r"(paquete|envio|aduana|entrega|pedido)\b.{0,80}?(pague|pagar|paga|arancel|impuesto|"
+                r"saldo pendiente|gastos de (envio|reenvio)|reprogramacion)|"
+                r"(pague|paga|pagar|arancel|impuesto) .{0,60}?(paquete|envio|aduana|entrega)", t)
+    if ev and find_urls(text):
+        add("package_fee", "Cobra por liberar o reenviar un paquete",
+            f"pide pagar un valor pequeño por un envío (\"{ev[:60]}\") en un enlace; las transportadoras no "
+            "cobran así.", 20, ev[:60])
     if tricks:
         names = [TRICK_NAMES[k] for k in sorted(tricks)]
         ev = examples.get(sorted(tricks)[0], "")
