@@ -369,7 +369,8 @@ export function consistent(parsed, isPhishing) {
 export const SIGNAL_KEYS = ["mixed_domain", "brand_lookalike", "security_domain", "shortener", "odd_tld", "ip_url",
   "no_https", "urgency", "threat", "credentials", "generic_greeting", "prize", "money_request", "shared_doc",
   "secrecy", "deadline", "click", "obfuscation"];
-export const FEATURES = ["lstm_logit", ...SIGNAL_KEYS, "n_urls"];
+const REQUEST_KEYS = ["credentials", "money_request", "click", "shared_doc", "prize", "secrecy", "obfuscation"];
+export const FEATURES = ["lstm_logit", ...SIGNAL_KEYS, "n_urls", "solo_informa"];
 
 function logit(p, eps = 1e-6) {
   p = Math.min(Math.max(p, eps), 1 - eps);
@@ -379,7 +380,9 @@ function logit(p, eps = 1e-6) {
 export function combinerFeatures(email, pLstm, signals) {
   signals = signals || detect(email);
   const keys = new Set(signals.map((s) => s.key));
-  return [logit(pLstm), ...SIGNAL_KEYS.map((k) => (keys.has(k) ? 1 : 0)), Math.min(findUrls(email).length, 3)];
+  const urls = findUrls(email);
+  const soloInforma = !urls.length && !REQUEST_KEYS.some((k) => keys.has(k)) ? 1 : 0;  // no trae enlaces ni pide nada
+  return [logit(pLstm), ...SIGNAL_KEYS.map((k) => (keys.has(k) ? 1 : 0)), Math.min(urls.length, 3), soloInforma];
 }
 
 /** Decisión final: BiLSTM + señales de las reglas (regresión logística, ver combine.py). */

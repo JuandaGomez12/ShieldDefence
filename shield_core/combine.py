@@ -19,7 +19,9 @@ from .signals import detect, find_urls
 SIGNAL_KEYS = ["mixed_domain", "brand_lookalike", "security_domain", "shortener", "odd_tld", "ip_url", "no_https",
                "urgency", "threat", "credentials", "generic_greeting", "prize", "money_request", "shared_doc",
                "secrecy", "deadline", "click", "obfuscation"]
-FEATURES = ["lstm_logit"] + SIGNAL_KEYS + ["n_urls"]
+# Lo que hace que un correo "pida algo": si no tiene enlaces ni ninguna de estas señales, solo informa.
+REQUEST_KEYS = {"credentials", "money_request", "click", "shared_doc", "prize", "secrecy", "obfuscation"}
+FEATURES = ["lstm_logit"] + SIGNAL_KEYS + ["n_urls", "solo_informa"]
 
 
 def logit(p, eps=1e-6):
@@ -33,7 +35,9 @@ def features(email, p_lstm, signals=None):
     f = {"lstm_logit": logit(p_lstm)}
     for k in SIGNAL_KEYS:
         f[k] = 1.0 if k in keys else 0.0
-    f["n_urls"] = float(min(len(find_urls(email)), 3))
+    urls = find_urls(email)
+    f["n_urls"] = float(min(len(urls), 3))
+    f["solo_informa"] = 1.0 if not urls and not (keys & REQUEST_KEYS) else 0.0
     return [f[k] for k in FEATURES]
 
 

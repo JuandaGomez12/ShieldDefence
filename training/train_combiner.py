@@ -81,10 +81,10 @@ class BoundedLogReg:
 
     Sin esta restricción, si en validación la LSTM ya acertaba un caso, la regresión podía darle peso negativo
     a una señal (por ejemplo, a "dominio que imita una marca") y un correo con un dominio falso terminaba
-    con menos probabilidad de phishing. El único peso libre es el de número de enlaces.
+    con menos probabilidad de phishing. Los únicos pesos libres son el número de enlaces y "solo informa".
     """
 
-    def __init__(self, C=1.0, free=("n_urls",)):
+    def __init__(self, C=1.0, free=("n_urls", "solo_informa")):
         self.C, self.free = C, set(free)
 
     def fit(self, X, y):

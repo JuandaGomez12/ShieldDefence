@@ -545,8 +545,24 @@ def p_datos_discretos():
         firma=R.choice([persona(), "Gerencia", ""]))
 
 
-LEGIT += [l_plata_familia, l_personal, l_comunidad, l_entidad, l_seguridad_interna, l_promo, l_trabajo_corto]
-LEGIT_W += [12, 12, 6, 8, 4, 6, 8]
+def l_banco_aviso():
+    """Avisos reales de bancos: solo informan, no piden datos ni traen enlaces raros."""
+    b = R.choice(BANCOS)
+    return armar(frases(
+        [f"El desembolso de su préstamo por {plata()} ya fue abonado a su cuenta.", f"Se aplicó el pago de su cuota por {plata()}.",
+         f"Su nueva tarjeta débito fue enviada a la dirección registrada y llegará en {R.randint(3, 8)} días hábiles.",
+         f"El cupo de su tarjeta de crédito aumentó a {plata()} según la solicitud que hizo en la oficina.",
+         f"Ya puede descargar el paz y salvo de su crédito desde la app de {b}.",
+         f"Su CDT por {plata()} se renovó automáticamente por {R.choice(['90', '180', '360'])} días.",
+         f"Registramos el cambio de su número de celular el {fecha()}.",
+         f"El {fecha()} de {hora()} a {hora()} la app no estará disponible por mejoras."],
+        ["Si usted no hizo esta solicitud, acérquese a cualquier oficina.", "No es necesario que haga nada más.",
+         "Recuerde que solo nos comunicamos desde las líneas que aparecen en su tarjeta.", "Gracias por elegirnos.", ""]),
+        firma=R.choice([b, f"{b} Colombia", f"Servicio al cliente {b}"]))
+
+
+LEGIT += [l_banco_aviso, l_plata_familia, l_personal, l_comunidad, l_entidad, l_seguridad_interna, l_promo, l_trabajo_corto]
+LEGIT_W += [10, 12, 12, 6, 8, 4, 6, 8]
 PHISH += [p_bono, p_factura_llamar, p_datos_discretos]
 PHISH_W += [8, 7, 7]
 
