@@ -5,6 +5,97 @@
    resultados que Python (lo comprueba web/tests/parity.mjs).
    ============================================================ */
 
+/* ---------------- deobfuscate.py ---------------- */
+const INVISIBLE_CLASS = "[­͏؜ᅟᅠ឴឵᠎​-‏‪-‮⁠-⁤⁦-⁯﻿]";
+const INVISIBLE_RE = new RegExp(INVISIBLE_CLASS, "g");
+const HOMOGLYPHS = {
+  "а": "a", "е": "e", "о": "o", "р": "p", "с": "c", "у": "y", "х": "x", "і": "i", "ј": "j", "ѕ": "s",
+  "ԁ": "d", "һ": "h", "ӏ": "l", "ԛ": "q", "ԝ": "w", "ɡ": "g",
+  "А": "A", "В": "B", "Е": "E", "К": "K", "М": "M", "Н": "H", "О": "O", "Р": "P", "С": "C", "Т": "T",
+  "Х": "X", "Ү": "Y", "І": "I", "Ј": "J", "Ѕ": "S",
+  "ο": "o", "α": "a", "ν": "v", "ι": "i", "κ": "k", "ρ": "p", "τ": "t", "υ": "u", "ε": "e",
+  "Α": "A", "Β": "B", "Ε": "E", "Ζ": "Z", "Η": "H", "Ι": "I", "Κ": "K", "Μ": "M", "Ν": "N", "Ο": "O",
+  "Ρ": "P", "Τ": "T", "Χ": "X", "Υ": "Y",
+};
+const HOMO_CLASS = "[" + Object.keys(HOMOGLYPHS).join("") + "]";
+const FANCY_CLASS = "[！-～\u{1d400}-\u{1d7ff}]";
+const SPACED_RE = /(?<!\p{L})(?:\p{L} ){3,}\p{L}(?!\p{L})/gu;
+const DOTTED_RE = /(?<!\p{L})(?:\p{L}[.\-_*·]){4,}\p{L}(?!\p{L})/gu;
+const LEET = { "0": "o", "1": "i", "3": "e", "4": "a", "5": "s", "7": "t", "@": "a", "$": "s" };
+const LEET_TOKEN_RE = /(?<![\p{L}\p{N}_@$])[\p{L}\p{N}_@$]*[0134578@$][\p{L}\p{N}_@$]*(?![\p{L}\p{N}_@$])/gu;
+const WATCH = ["clave", "contras", "passw", "cuent", "banc", "nequi", "davi", "bbva", "paypal", "netfl", "amazon",
+  "apple", "micros", "outlook", "googl", "verif", "tarjet", "credit", "urgen", "gratis", "premi", "ganad",
+  "ganas", "bloque", "suspend", "segur", "acces", "usuari", "login", "transf", "pago", "factur", "diner",
+  "bitcoin", "codig", "datos", "confirm", "regalo", "clic", "enlace", "inmediat", "cvv", "pin"];
+export const TRICK_NAMES = {
+  invisibles: "caracteres invisibles dentro de las palabras",
+  otro_alfabeto: "letras de otro alfabeto que se ven iguales a las normales",
+  letras_especiales: "letras de adorno (ancho completo o negrita matemática)",
+  letras_separadas: "letras separadas por espacios o puntos",
+  numeros_por_letras: "números en lugar de letras",
+};
+const stripAccents = (s) => s.normalize("NFD").replace(/\p{Mn}/gu, "");
+const leetMap = (s) => [...s].map((c) => LEET[c] ?? c).join("");
+
+function watched(word) {
+  const w = stripAccents(word.toLowerCase());
+  return [...w].length >= 3 && WATCH.some((k) => w.startsWith(k) || (k.length >= 5 && w.includes(k)));
+}
+
+function fixText(part, tricks, examples) {
+  const spaced = (m) => {
+    tricks.add("letras_separadas");
+    if (!("letras_separadas" in examples)) examples.letras_separadas = m;
+    return m.replace(/[ .\-_*·]/g, "");
+  };
+  part = part.replace(SPACED_RE, spaced).replace(DOTTED_RE, spaced);
+  return part.replace(LEET_TOKEN_RE, (tok) => {
+    const letters = [...tok].filter((c) => /\p{L}/u.test(c)).length;
+    if (letters < 2 || /^\d+$/.test(tok)) return tok;
+    for (const cand of [leetMap(tok), leetMap(tok.replace(/1/g, "l"))]) {
+      if (watched(cand)) {
+        tricks.add("numeros_por_letras");
+        if (!("numeros_por_letras" in examples)) examples.numeros_por_letras = tok;
+        return cand;
+      }
+    }
+    return tok;
+  });
+}
+
+/** Quita los disfraces ("c l a v e", "cl4ve", invisibles, letras cirílicas...). Igual a deobfuscate.py. */
+export function deobfuscate(text) {
+  const tricks = new Set(), examples = {};
+  if (!text) return { text: "", tricks, examples };
+  if (new RegExp(INVISIBLE_CLASS).test(text)) {
+    if (new RegExp("[\\p{L}\\p{N}_]" + INVISIBLE_CLASS + "+[\\p{L}\\p{N}_]", "u").test(text)) {
+      tricks.add("invisibles");
+      const w = text.match(new RegExp("[\\p{L}\\p{N}_]+" + INVISIBLE_CLASS + "+[\\p{L}\\p{N}_]+", "u"));
+      examples.invisibles = w ? w[0].replace(INVISIBLE_RE, "·") : "";
+    }
+    text = text.replace(INVISIBLE_RE, "");
+  }
+  if (new RegExp(FANCY_CLASS, "u").test(text)) {
+    tricks.add("letras_especiales");
+    const w = text.match(new RegExp("\\S*" + FANCY_CLASS + "\\S*", "u"));
+    examples.letras_especiales = w ? w[0] : "";
+    text = text.replace(new RegExp(FANCY_CLASS, "gu"), (m) => m.normalize("NFKC"));
+  }
+  if (new RegExp(HOMO_CLASS).test(text)) {
+    text = text.replace(/\S+/g, (word) => {
+      if (new RegExp(HOMO_CLASS).test(word) && /[A-Za-z]/.test(word)) {
+        tricks.add("otro_alfabeto");
+        if (!("otro_alfabeto" in examples)) examples.otro_alfabeto = word;
+        return word.replace(new RegExp(HOMO_CLASS, "g"), (c) => HOMOGLYPHS[c]);
+      }
+      return word;
+    });
+  }
+  const parts = text.split(/(https?:\/\/[^\s<>"']+|www\.[^\s<>"']+)/i);
+  text = parts.map((p, i) => (i % 2 ? p : fixText(p, tricks, examples))).join("");
+  return { text, tricks, examples };
+}
+
 /* ---------------- preprocess.py ---------------- */
 const MAX_CHARS = 6000;
 const NOISE = [
@@ -40,7 +131,7 @@ function domainTokens(url) {
 
 /** Texto normalizado que recibe la LSTM (igual a for_model en Python). */
 export function forModel(text) {
-  text = cleanRaw(text).normalize("NFKC").toLowerCase();
+  text = deobfuscate(cleanRaw(text)).text.normalize("NFKC").toLowerCase();
   text = text.replace(URL_MODEL_RE, (m) => domainTokens(m));
   text = text.replace(EMAIL_RE, " emailtoken ");
   text = text.replace(/\p{Nd}+/gu, " 0 ");
@@ -113,7 +204,9 @@ const TEXT_RULES = [
 
 /** Señales encontradas en el correo (igual a detect en Python). */
 export function detect(text) {
-  text = text || "";
+  // Primero se quitan los disfraces para que las reglas lean la palabra real; el disfraz es una señal.
+  const deob = deobfuscate(text || "");
+  text = deob.text;
   const t = norm(text);
   const out = [];
   const add = (key, ttl, detail, weight, evidence = "") => {
@@ -151,6 +244,12 @@ export function detect(text) {
   for (const [key, ttl, weight, needsUrl, rx, detail] of TEXT_RULES) {
     const ev = first(rx, t);
     if (ev && (!needsUrl || urls.length)) add(key, ttl, detail(ev), weight, ev);
+  }
+  if (deob.tricks.size) {
+    const keys = [...deob.tricks].sort();
+    add("obfuscation", "Texto disfrazado",
+      `escribe palabras con trucos (${keys.map((k) => TRICK_NAMES[k]).join(", ")}), algo que hacen los atacantes para que los filtros ` +
+      'no lean palabras como "clave" o "cuenta".', 25, deob.examples[keys[0]] || "");
   }
   return out;
 }
@@ -256,7 +355,7 @@ export function consistent(parsed, isPhishing) {
 /* ---------------- combine.py ---------------- */
 export const SIGNAL_KEYS = ["mixed_domain", "brand_lookalike", "security_domain", "shortener", "odd_tld", "ip_url",
   "no_https", "urgency", "threat", "credentials", "generic_greeting", "prize", "money_request", "shared_doc",
-  "secrecy", "deadline", "click"];
+  "secrecy", "deadline", "click", "obfuscation"];
 export const FEATURES = ["lstm_logit", ...SIGNAL_KEYS, "n_urls"];
 
 function logit(p, eps = 1e-6) {

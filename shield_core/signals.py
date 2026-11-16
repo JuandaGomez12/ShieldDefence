@@ -8,6 +8,8 @@ ejemplos del ajuste fino del LLM y como respaldo si el LLM no está.
 """
 import re
 import unicodedata
+
+from .deobfuscate import TRICK_NAMES, deobfuscate
 from dataclasses import dataclass
 from urllib.parse import urlparse
 
@@ -58,7 +60,10 @@ def host_of(url: str) -> str:
 
 def detect(text: str):
     """Devuelve la lista de señales encontradas en el correo."""
-    t = norm(text or "")
+    # Primero se quitan los disfraces ("c l a v e", "cl4ve", letras cirílicas...) para que las reglas
+    # lean la palabra real. El disfraz mismo es una señal.
+    text, tricks, examples = deobfuscate(text or "")
+    t = norm(text)
     out = []
 
     def add(key, title, detail, weight, evidence=""):
@@ -151,6 +156,12 @@ def detect(text: str):
                 r"ingresa al enlace|siguiente enlace|follow the link|revisalo (aqui|en)", t)
     if ev and find_urls(text):
         add("click", "Pide hacer clic en un enlace", f"insiste en abrir un enlace (\"{ev}\").", 5, ev)
+    if tricks:
+        names = [TRICK_NAMES[k] for k in sorted(tricks)]
+        ev = examples.get(sorted(tricks)[0], "")
+        add("obfuscation", "Texto disfrazado",
+            f"escribe palabras con trucos ({', '.join(names)}), algo que hacen los atacantes para que los filtros "
+            "no lean palabras como \"clave\" o \"cuenta\".", 25, ev)
     return out
 
 

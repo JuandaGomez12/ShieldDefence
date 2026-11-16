@@ -43,6 +43,34 @@ def feats(texts, probs):
     return np.array([features(clean_raw(t), p, detect(clean_raw(t))) for t, p in zip(texts, probs)])
 
 
+KEYWORDS = ["clave", "contraseña", "cuenta", "tarjeta", "bloqueada", "suspendida", "verificar", "urgente",
+            "password", "account", "verify", "suspended", "bank", "banco", "premio", "pago", "datos"]
+CYR = {"a": "а", "e": "е", "o": "о", "p": "р", "c": "с", "x": "х", "y": "у", "i": "і"}
+LEET_OUT = {"a": "4", "e": "3", "o": "0", "i": "1", "s": "5"}
+
+
+def obfuscate(text, rng):
+    """Disfraza palabras clave de un correo como lo haría un atacante (para entrenar el combinador)."""
+    words = text.split(" ")
+    idx = [i for i, w in enumerate(words) if w.strip(".,:;!¡?¿").lower() in KEYWORDS]
+    if not idx:
+        idx = list(rng.choice(len(words), size=min(2, len(words)), replace=False))
+    for i in idx:
+        w = words[i]
+        trick = rng.integers(5)
+        if trick == 0:
+            words[i] = " ".join(w)
+        elif trick == 1:
+            words[i] = rng.choice([".", "-", "*"]).join(w)
+        elif trick == 2:
+            words[i] = "".join(LEET_OUT.get(c, c) if rng.random() < 0.6 else c for c in w)
+        elif trick == 3:
+            words[i] = w[: len(w) // 2] + "\u200b" + w[len(w) // 2:]
+        else:
+            words[i] = "".join(CYR.get(c, c) if rng.random() < 0.5 else c for c in w)
+    return " ".join(words)
+
+
 class BoundedLogReg:
     """Regresión logística donde las señales de riesgo solo pueden subir la probabilidad (peso >= 0).
 
@@ -100,6 +128,8 @@ def main():
     ap.add_argument("--models", default=str(ROOT / "models"))
     ap.add_argument("--min_precision", type=float, default=0.95)
     ap.add_argument("--C", type=float, default=1.0)
+    ap.add_argument("--disfrazados", type=float, default=0.2,
+                    help="fracción de correos de phishing de validación que se agregan disfrazados")
     ap.add_argument("--ruido", type=float, default=0.35,
                     help="fracción de palabras desconocidas al calcular la LSTM en validación. En validación la LSTM "
                          "casi no se equivoca y el combinador aprendería a confiar solo en ella; con ruido se simula "
@@ -122,10 +152,16 @@ def main():
     pv_ruido = lstm_probs(model, va.text, a.ruido, 1)
     Xv, Xt, Xe = feats(va.text, pv), feats(te.text, pt), feats(es.text, pe)
     Xv_ruido = feats(va.text, pv_ruido)
+    # Copias disfrazadas de una parte del phishing ("c l a v e", "cl4ve"...). Los legítimos no se disfrazan
+    # porque en la vida real no escriben así.
+    rng = np.random.default_rng(5)
+    ph = va[va.label == 1].sample(frac=a.disfrazados, random_state=5)
+    ph_txt = [obfuscate(t, rng) for t in ph.text]
+    X_disf = feats(ph_txt, lstm_probs(model, ph_txt))
 
     lr = BoundedLogReg(C=a.C)
     # Se entrena con la validación limpia y con la versión con palabras desconocidas.
-    lr.fit(np.vstack([Xv, Xv_ruido]), np.concatenate([va.label.values, va.label.values]))
+    lr.fit(np.vstack([Xv, Xv_ruido, X_disf]), np.concatenate([va.label.values, va.label.values, np.ones(len(X_disf))]))
     cv = lr.predict_proba(Xv)[:, 1]
     # Umbral que maximiza la exactitud en validación (con y sin palabras desconocidas): así pesan igual
     # las falsas alarmas y el phishing que se escapa.
@@ -143,6 +179,15 @@ def main():
                          "espanol": evaluate("BiLSTM sola, español", es, pe, lstm_thr, True)},
            "combinador": {"umbral": thr, "test": report(te.label, ct, te.source, thr),
                           "espanol": evaluate("Combinador, español", es, ce, thr, True)}}
+    # Phishing de la prueba en español, disfrazado: cuánto se sigue detectando.
+    rng2 = np.random.default_rng(11)
+    ph_es = es[es.label == 1]
+    disf = [obfuscate(t, rng2) for t in ph_es.text]
+    pd_l = lstm_probs(model, disf)
+    pd_c = lr.predict_proba(feats(disf, pd_l))[:, 1]
+    res["phishing_disfrazado_es"] = {"correos": len(disf), "lstm_sola": round(float((pd_l >= lstm_thr).mean()), 4),
+                                     "combinador": round(float((pd_c >= thr).mean()), 4)}
+    print("\nPhishing en español disfrazado detectado:", json.dumps(res["phishing_disfrazado_es"]))
     print("\nPrueba general  BiLSTM sola:", res["lstm_sola"]["test"]["accuracy"],
           "| combinador:", res["combinador"]["test"]["accuracy"])
     json.dump({"features": FEATURES, "pesos": [float(w) for w in lr.coef_[0]], "sesgo": float(lr.intercept_[0]),

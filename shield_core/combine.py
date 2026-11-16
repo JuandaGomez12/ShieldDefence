@@ -18,7 +18,7 @@ from .signals import detect, find_urls
 
 SIGNAL_KEYS = ["mixed_domain", "brand_lookalike", "security_domain", "shortener", "odd_tld", "ip_url", "no_https",
                "urgency", "threat", "credentials", "generic_greeting", "prize", "money_request", "shared_doc",
-               "secrecy", "deadline", "click"]
+               "secrecy", "deadline", "click", "obfuscation"]
 FEATURES = ["lstm_logit"] + SIGNAL_KEYS + ["n_urls"]
 
 

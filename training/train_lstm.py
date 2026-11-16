@@ -144,8 +144,9 @@ def main():
         tr = pd.concat([tr, pd.read_csv(E / "train.csv")[cols]], ignore_index=True).sample(frac=1, random_state=42)
         va = pd.concat([va, pd.read_csv(E / "val.csv")[cols]], ignore_index=True)
         print(f"Con sintéticos: {len(tr)} de entrenamiento, {len(va)} de validación")
+    # Se recalcula el texto del modelo con la limpieza actual (incluye quitar disfraces como "c l a v e").
     for d in (tr, va, te):
-        d["model_text"] = d["model_text"].fillna("").astype(str)
+        d["model_text"] = d["text"].fillna("").astype(str).map(for_model)
     if not a.sin_saludos:
         tr, va = add_greetings(tr, 1), add_greetings(va, 2)
 

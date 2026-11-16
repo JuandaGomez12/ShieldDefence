@@ -6,6 +6,8 @@ así el modelo siempre ve el texto preparado de la misma forma.
 import re
 import unicodedata
 
+from .deobfuscate import deobfuscate
+
 URL_RE = re.compile(r"(https?://[^\s<>\"']+|www\.[^\s<>\"']+)", re.I)
 EMAIL_RE = re.compile(r"[\w.+-]+@[\w-]+\.[\w.-]+")
 NUM_RE = re.compile(r"\d+")
@@ -54,7 +56,7 @@ def _domain_tokens(url: str) -> str:
 
 def for_model(text: str) -> str:
     """Texto normalizado que recibe la LSTM."""
-    text = clean_raw(text)
+    text = deobfuscate(clean_raw(text))[0]  # "c l a v e", "cl4ve"... -> "clave"
     text = unicodedata.normalize("NFKC", text).lower()
     text = URL_RE.sub(lambda m: _domain_tokens(m.group(0)), text)
     text = EMAIL_RE.sub(" emailtoken ", text)

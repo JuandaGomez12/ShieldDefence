@@ -13,6 +13,12 @@ from shield_core.combine import Combiner
 df = pd.read_csv(ROOT / "data/processed/test.csv").sample(300, random_state=1)
 es = pd.read_csv(ROOT / "data/spanish_eval.csv")
 texts = list(df["text"].astype(str)) + list(es["text"].astype(str))
+# Versiones disfrazadas ("c l a v e", "cl4ve", invisibles, cirílicas) para probar deobfuscate en los dos lados.
+import numpy as np  # noqa: E402
+from training.train_combiner import obfuscate  # noqa: E402
+rng = np.random.default_rng(0)
+texts += [obfuscate(t, rng) for t in es["text"].astype(str)] + [
+    "Confirme su ｃｌａｖｅ y su 𝐜𝐨𝐧𝐭𝐫𝐚𝐬𝐞ñ𝐚 en http://раypal.com/login", "S.A.S. E.P.S. mp3 4G covid19 B-201 FE-20391"]
 MODELS = Path(sys.argv[2]) if len(sys.argv) > 2 else ROOT / "models"
 m = NumpyBiLSTM(MODELS)
 comb = Combiner.load(MODELS)
