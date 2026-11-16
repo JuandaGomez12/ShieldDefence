@@ -18,7 +18,10 @@ import numpy as np  # noqa: E402
 from training.train_combiner import obfuscate  # noqa: E402
 rng = np.random.default_rng(0)
 texts += [obfuscate(t, rng) for t in es["text"].astype(str)] + [
-    "Confirme su ｃｌａｖｅ y su 𝐜𝐨𝐧𝐭𝐫𝐚𝐬𝐞ñ𝐚 en http://раypal.com/login", "S.A.S. E.P.S. mp3 4G covid19 B-201 FE-20391"]
+    "Confirme su ｃｌａｖｅ y su 𝐜𝐨𝐧𝐭𝐫𝐚𝐬𝐞ñ𝐚 en http://раypal.com/login", "S.A.S. E.P.S. mp3 4G covid19 B-201 FE-20391",
+    # textos extremos que antes hacían lentísima la limpieza
+    "hola " + "_" * 3000 + " texto unsubscribe", "hola " + "-" * 3000 + " original message --- fin", "a@" * 2000,
+    "[lista] Asunto\n---- Original Message ----\nFrom: alguien\nTexto reenviado"]
 MODELS = Path(sys.argv[2]) if len(sys.argv) > 2 else ROOT / "models"
 m = NumpyBiLSTM(MODELS)
 comb = Combiner.load(MODELS)

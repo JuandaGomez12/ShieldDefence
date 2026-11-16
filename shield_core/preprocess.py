@@ -9,18 +9,42 @@ import unicodedata
 from .deobfuscate import deobfuscate
 
 URL_RE = re.compile(r"(https?://[^\s<>\"']+|www\.[^\s<>\"']+)", re.I)
-EMAIL_RE = re.compile(r"[\w.+-]+@[\w-]+\.[\w.-]+")
+# El (?<!...) evita que la búsqueda empiece en medio de una palabra larga (sin eso, una cadena de miles
+# de letras sin "@" hacía que la búsqueda fuera lentísima).
+EMAIL_RE = re.compile(r"(?<![\w.+-])[\w.+-]+@[\w-]+\.[\w.-]+")
 NUM_RE = re.compile(r"\d+")
 MAX_CHARS = 6000
 
 # Restos de las listas de correo y de los datasets que no dicen nada sobre
 # si un correo es phishing, pero que el modelo podría memorizar.
-_NOISE = [
-    re.compile(r"^\s*\[[^\]]{1,40}\]\s*", re.M),                     # [lista] en el asunto
-    re.compile(r"_{5,}.*?(mailing list|unsubscribe|listinfo).*", re.I | re.S),
-    re.compile(r"-{3,}\s*original message\s*-{3,}.*", re.I | re.S),
-    re.compile(r"^(from|to|cc|sent|subject|date)\s*:.*$", re.I | re.M),
-]
+_LIST_TAG = re.compile(r"^[ \t]*\[[^\]\n]{1,40}\][ \t]*", re.M)        # [lista] en el asunto
+_HEADERS = re.compile(r"^(from|to|cc|sent|subject|date)[ \t]*:.*$", re.I | re.M)
+_UNDERSCORES = re.compile(r"_{5}")
+_LIST_FOOTER = re.compile(r"mailing list|unsubscribe|listinfo", re.I)
+_ORIGINAL = re.compile(r"-{3}\s*original message\s*-{3}", re.I)
+
+
+def _cut_footers(text):
+    """Corta el pie de las listas de correo ("_____ ... unsubscribe") y los mensajes reenviados
+    ("--- Original Message ---"), recorriendo el texto una sola vez.
+
+    Antes eran expresiones del tipo "_{5,}.*?unsubscribe.*" que, con un correo con miles de guiones
+    bajos o guiones seguidos, tardaban minutos (y en el navegador congelaban la página).
+    """
+    m = _UNDERSCORES.search(text)
+    if m:
+        last = None
+        for last in _LIST_FOOTER.finditer(text):
+            pass
+        if last is not None and last.start() >= m.end():
+            text = text[:m.start()] + " "
+    m = _ORIGINAL.search(text)
+    if m:
+        start = m.start()
+        while start > 0 and text[start - 1] == "-":
+            start -= 1
+        text = text[:start] + " "
+    return text
 
 
 def clean_raw(text: str) -> str:
@@ -28,8 +52,9 @@ def clean_raw(text: str) -> str:
     if not isinstance(text, str):
         return ""
     text = text[:MAX_CHARS * 2]
-    for rx in _NOISE:
-        text = rx.sub(" ", text)
+    text = _LIST_TAG.sub(" ", text)
+    text = _cut_footers(text)
+    text = _HEADERS.sub(" ", text)
     text = re.sub(r"[ \t]+", " ", text)
     text = re.sub(r"\n{3,}", "\n\n", text)
     return text.strip()[:MAX_CHARS]

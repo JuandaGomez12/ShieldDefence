@@ -98,19 +98,32 @@ export function deobfuscate(text) {
 
 /* ---------------- preprocess.py ---------------- */
 const MAX_CHARS = 6000;
-const NOISE = [
-  /^\s*\[[^\]]{1,40}\]\s*/gm,
-  /_{5,}[\s\S]*?(mailing list|unsubscribe|listinfo)[\s\S]*/gi,
-  /-{3,}\s*original message\s*-{3,}[\s\S]*/gi,
-  /^(from|to|cc|sent|subject|date)\s*:.*$/gim,
-];
+const LIST_TAG = /^[ \t]*\[[^\]\n]{1,40}\][ \t]*/gm;
+const HEADERS = /^(from|to|cc|sent|subject|date)[ \t]*:.*$/gim;
+
+/** Corta el pie de listas de correo y los mensajes reenviados en una sola pasada (igual que preprocess.py). */
+function cutFooters(text) {
+  const u = text.search(/_{5}/);
+  if (u >= 0) {
+    let last = -1;
+    for (const m of text.matchAll(/mailing list|unsubscribe|listinfo/gi)) last = m.index;
+    if (last >= u + 5) text = text.slice(0, u) + " ";
+  }
+  const o = text.match(/-{3}\s*original message\s*-{3}/i);
+  if (o) {
+    let start = o.index;
+    while (start > 0 && text[start - 1] === "-") start--;
+    text = text.slice(0, start) + " ";
+  }
+  return text;
+}
 const URL_MODEL_RE = /(https?:\/\/[^\s<>"']+|www\.[^\s<>"']+)/gi;
-const EMAIL_RE = /[\p{L}\p{N}_.+-]+@[\p{L}\p{N}_-]+\.[\p{L}\p{N}_.-]+/gu;
+const EMAIL_RE = /(?<![\p{L}\p{N}_.+-])[\p{L}\p{N}_.+-]+@[\p{L}\p{N}_-]+\.[\p{L}\p{N}_.-]+/gu;
 
 export function cleanRaw(text) {
   if (typeof text !== "string") return "";
   text = [...text].slice(0, MAX_CHARS * 2).join("");
-  for (const rx of NOISE) text = text.replace(rx, " ");
+  text = cutFooters(text.replace(LIST_TAG, " ")).replace(HEADERS, " ");
   text = text.replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n").trim();
   return [...text].slice(0, MAX_CHARS).join("");
 }
