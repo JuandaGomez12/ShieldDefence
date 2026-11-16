@@ -462,6 +462,7 @@ export class Combiner {
     this.w = cfg.pesos; this.b = cfg.sesgo; this.threshold = cfg.umbral;
     // Red de seguridad: con muchas señales fuertes juntas el correo se marca aunque la LSTM dude.
     this.floorPoints = cfg.piso_reglas ?? null; this.floorProb = cfg.piso_prob ?? 0.9;
+    this.combos = cfg.combos_decisivos || [];
   }
   prob(email, pLstm, signals) {
     signals = signals || detect(email);
@@ -469,7 +470,9 @@ export class Combiner {
     let z = this.b;
     for (let i = 0; i < x.length; i++) z += this.w[i] * x[i];
     let p = 1 / (1 + Math.exp(-z));
-    if (this.floorPoints !== null && signals.reduce((a, s) => a + s.weight, 0) >= this.floorPoints) p = Math.max(p, this.floorProb);
+    const keys = new Set(signals.map((s) => s.key));
+    if ((this.floorPoints !== null && signals.reduce((a, s) => a + s.weight, 0) >= this.floorPoints) ||
+        this.combos.some((c) => c.every((k) => keys.has(k)))) p = Math.max(p, this.floorProb);
     return p;
   }
 }

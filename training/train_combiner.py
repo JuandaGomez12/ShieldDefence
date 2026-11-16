@@ -19,7 +19,7 @@ from scipy.optimize import minimize
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from shield_core.combine import FEATURES, features, rule_points  # noqa: E402
+from shield_core.combine import DECISIVE, FEATURES, features, rule_points  # noqa: E402
 from shield_core.lstm_numpy import NumpyBiLSTM  # noqa: E402
 from shield_core.preprocess import clean_raw, for_model  # noqa: E402
 from shield_core.signals import detect  # noqa: E402
@@ -137,6 +137,8 @@ def main():
                     help="evaluar también data/spanish_blind.csv (prueba ciega: usarla solo al final, una vez)")
     ap.add_argument("--max_legit_piso", type=float, default=0.005,
                     help="fracción máxima de correos legítimos de validación que puede activar la red de seguridad")
+    ap.add_argument("--max_legit_combo", type=float, default=0.002,
+                    help="fracción máxima de legítimos de validación que puede tener una combinación decisiva")
     ap.add_argument("--blind", default="", help="otra prueba ciega para evaluar (ruta a un csv)")
     ap.add_argument("--sin", default="", help="variables que no se usan (peso 0), separadas por coma")
     ap.add_argument("--solo_numpy", action="store_true", help="no usar Keras aunque exista lstm.keras")
@@ -198,9 +200,27 @@ def main():
     print(f"Red de seguridad: {piso} puntos de reglas (legítimos de validación que la activan: "
           f"{(legit_pts >= piso).mean():.2%}; phishing de validación: {(pts_v[va.label.values == 1] >= piso).mean():.1%})")
 
+    # Combinaciones decisivas: solo las que casi ningún legítimo de validación tiene.
+    keys_v = [{x.key for x in detect(clean_raw(t))} for t in va.text]
+    combos = []
+    for c in DECISIVE:
+        hits = np.array([set(c) <= k for k in keys_v])
+        legit_rate = hits[va.label.values == 0].mean()
+        ok = legit_rate <= a.max_legit_combo
+        print(f"  combinación {'+'.join(c):35s} legítimos {legit_rate:.2%} | phishing {hits[va.label.values == 1].mean():.1%} "
+              f"| {'se usa' if ok else 'NO se usa'}")
+        if ok:
+            combos.append(c)
+
     def con_piso(probs, texts):
-        pts = np.array([rule_points(detect(clean_raw(t))) for t in texts])
-        return np.where(pts >= piso, np.maximum(probs, 0.9), probs)
+        out = []
+        for p, t in zip(probs, texts):
+            sig = detect(clean_raw(t))
+            keys = {x.key for x in sig}
+            if rule_points(sig) >= piso or any(set(c) <= keys for c in combos):
+                p = max(p, 0.9)
+            out.append(p)
+        return np.array(out)
 
     ct, ce = con_piso(lr.predict_proba(Xt)[:, 1], te.text), con_piso(lr.predict_proba(Xe)[:, 1], es.text)
 
@@ -236,7 +256,7 @@ def main():
     print("\nPrueba general  BiLSTM sola:", res["lstm_sola"]["test"]["accuracy"],
           "| combinador:", res["combinador"]["test"]["accuracy"])
     json.dump({"features": FEATURES, "pesos": [float(w) for w in lr.coef_[0]], "sesgo": float(lr.intercept_[0]),
-               "umbral": thr, "piso_reglas": piso, "piso_prob": 0.9}, open(M / "combinador.json", "w"), indent=2)
+               "umbral": thr, "piso_reglas": piso, "piso_prob": 0.9, "combos_decisivos": combos}, open(M / "combinador.json", "w"), indent=2)
     json.dump(res, open(M / "combinador_eval.json", "w"), indent=2, ensure_ascii=False)
     print("Guardado en", M / "combinador.json")
 
