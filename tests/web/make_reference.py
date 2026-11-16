@@ -8,17 +8,30 @@ from shield_core.preprocess import for_model
 from shield_core.signals import detect
 from shield_core.explain import build_prompt, parse_answer
 from shield_core.lstm_numpy import NumpyBiLSTM
+from shield_core.combine import Combiner
 
 df = pd.read_csv(ROOT / "data/processed/test.csv").sample(300, random_state=1)
 es = pd.read_csv(ROOT / "data/spanish_eval.csv")
 texts = list(df["text"].astype(str)) + list(es["text"].astype(str))
-m = NumpyBiLSTM(ROOT / "models")
+# Versiones disfrazadas ("c l a v e", "cl4ve", invisibles, cirílicas) para probar deobfuscate en los dos lados.
+import numpy as np  # noqa: E402
+from training.train_combiner import obfuscate  # noqa: E402
+rng = np.random.default_rng(0)
+texts += [obfuscate(t, rng) for t in es["text"].astype(str)] + [
+    "Confirme su ｃｌａｖｅ y su 𝐜𝐨𝐧𝐭𝐫𝐚𝐬𝐞ñ𝐚 en http://раypal.com/login", "S.A.S. E.P.S. mp3 4G covid19 B-201 FE-20391",
+    # textos extremos que antes hacían lentísima la limpieza
+    "hola " + "_" * 3000 + " texto unsubscribe", "hola " + "-" * 3000 + " original message --- fin", "a@" * 2000,
+    "[lista] Asunto\n---- Original Message ----\nFrom: alguien\nTexto reenviado"]
+MODELS = Path(sys.argv[2]) if len(sys.argv) > 2 else ROOT / "models"
+m = NumpyBiLSTM(MODELS)
+comb = Combiner.load(MODELS)
 out = []
 for t in texts:
     sig = detect(t)
     p = float(m.predict(for_model(t)))
     out.append({"text": t, "model": for_model(t), "keys": [s.key for s in sig],
                 "evidence": [s.evidence for s in sig], "prob": p,
-                "prompt": build_prompt(t, p >= 0.5, p, sig)})
+                "prompt": build_prompt(t, p >= 0.5, p, sig),
+                "comb": comb.prob(t, p, sig) if comb else None})
 json.dump(out, open(sys.argv[1], "w", encoding="utf-8"), ensure_ascii=False)
 print(len(out), "casos")

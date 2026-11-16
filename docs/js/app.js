@@ -5,7 +5,7 @@
    Ningún correo sale del computador del usuario.
    ============================================================ */
 import {
-  cleanRaw, detect, BiLSTM, SYSTEM, buildPrompt, templateExplanation, parseAnswer, consistent,
+  cleanRaw, detect, BiLSTM, Combiner, SYSTEM, buildPrompt, templateExplanation, parseAnswer, consistent,
 } from "./shield-core.js";
 import { LSTM_BASE, LLM_REPO, LLM_MAX_TOKENS, LLM_ENABLED, TRANSFORMERS_URL } from "./config.js";
 import { extractText } from "./files.js";
@@ -17,6 +17,7 @@ const statusEl = $("status"), statusText = $("status-text"), llmBtn = $("llm-tog
 
 let busy = false;
 let lstm = null;
+let combiner = null;
 
 /* ---------- Saludo según la hora ---------- */
 (function setGreeting() {
@@ -38,6 +39,7 @@ const lstmReady = (async () => {
     fetch(LSTM_BASE + "lstm_web.bin").then((r) => { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); }),
   ]);
   lstm = new BiLSTM(meta, bin);
+  if (meta.combinador) combiner = new Combiner(meta.combinador);
   setStatus("", "En línea");
 })().catch((err) => {
   setStatus("error", "Sin modelo");
@@ -100,15 +102,18 @@ async function analyze(text) {
   await lstmReady;
   const t0 = performance.now();
   const email = cleanRaw(text);
-  const prob = lstm.predict(email);
-  const isPhishing = prob >= lstm.threshold;
   const signals = detect(email);
+  const probLstm = lstm.predict(email);
+  // Decisión final: la BiLSTM junto con las señales de las reglas (si el modelo trae combinador).
+  const prob = combiner ? combiner.prob(email, probLstm, signals) : probLstm;
+  const isPhishing = prob >= (combiner ? combiner.threshold : lstm.threshold);
   let nivel = "safe", etiqueta = "Sin señales claras de riesgo";
   if (isPhishing) [nivel, etiqueta] = prob >= 0.85 ? ["high", "Riesgo alto"] : ["mid", "Riesgo medio"];
   return {
     email, signals,
     es_phishing: isPhishing,
     probabilidad_phishing: prob,
+    probabilidad_lstm: probLstm,
     confianza: isPhishing ? prob : 1 - prob,
     nivel, etiqueta,
     explicacion: templateExplanation(email, isPhishing, prob, signals),
@@ -165,7 +170,8 @@ function explanationHtml(e) {
 
 function metaText(r) {
   const fuente = r.fuente_explicacion === "llm" ? `explicación generada por el LLM (${(r.llm_ms / 1000).toFixed(1)} s)` : "explicación por plantilla";
-  return `Clasificación: LSTM (${r.ms} ms) · ${fuente} · todo se procesó en tu navegador`;
+  const clasif = combiner ? `LSTM ${Math.round(r.probabilidad_lstm * 100)}% + señales` : "LSTM";
+  return `Clasificación: ${clasif} (${r.ms} ms) · ${fuente} · todo se procesó en tu navegador`;
 }
 
 function buildAnalysisHtml(r, extracted) {

@@ -12,6 +12,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutTimeout
 from pathlib import Path
 
+from shield_core.combine import Combiner
 from shield_core.explain import SYSTEM, build_prompt, parse_answer, template_explanation
 from shield_core.lstm_numpy import NumpyBiLSTM
 from shield_core.preprocess import clean_raw, for_model
@@ -32,11 +33,18 @@ class Classifier:
         cfg = json.load(open(MODELS / "lstm_config.json", encoding="utf-8"))
         self.threshold = float(cfg.get("umbral", 0.5))
         self.model = NumpyBiLSTM(MODELS)
-        self.info = {"umbral": self.threshold, "f1_test": cfg.get("test", {}).get("f1"),
+        # Si hay combinador, la decisión final junta la BiLSTM con las señales de las reglas.
+        self.combiner = Combiner.load(MODELS)
+        if self.combiner:
+            self.threshold = self.combiner.threshold
+        self.info = {"umbral": self.threshold, "combinador": bool(self.combiner), "f1_test": cfg.get("test", {}).get("f1"),
                      "f1_espanol": cfg.get("spanish", {}).get("f1")}
 
-    def predict(self, text: str) -> float:
-        return self.model.predict(for_model(text))
+    def predict(self, text: str, signals=None):
+        """Devuelve (probabilidad final, probabilidad de la BiLSTM sola)."""
+        p_lstm = self.model.predict(for_model(text))
+        p = self.combiner.prob(text, p_lstm, signals) if self.combiner else p_lstm
+        return p, p_lstm
 
 
 class Explainer:
@@ -114,9 +122,9 @@ class ShieldDefence:
     def analyze(self, text: str) -> dict:
         t0 = time.time()
         email = clean_raw(text)
-        prob = self.classifier.predict(email)
-        is_phishing = prob >= self.classifier.threshold
         signals = detect(email)
+        prob, prob_lstm = self.classifier.predict(email, signals)
+        is_phishing = prob >= self.classifier.threshold
         t1 = time.time()
         exp, source = self.explainer.explain(email, is_phishing, prob, signals)
         conf = prob if is_phishing else 1 - prob
@@ -127,6 +135,7 @@ class ShieldDefence:
         return {
             "es_phishing": bool(is_phishing),
             "probabilidad_phishing": round(prob, 4),
+            "probabilidad_lstm": round(prob_lstm, 4),
             "confianza": round(conf, 4),
             "nivel": level,
             "etiqueta": label,

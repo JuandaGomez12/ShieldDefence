@@ -21,7 +21,7 @@ from keras import layers  # noqa: E402
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from shield_core.preprocess import for_model  # noqa: E402
-from training.metrics import report  # noqa: E402
+from training.metrics import best_accuracy_threshold, pick_threshold, report  # noqa: E402,F401
 
 VOCAB = 30000
 MAX_LEN = 300
@@ -56,6 +56,24 @@ def add_greetings(df, seed, p=0.5):
         if rng.random() < p:
             text = text + " " + for_model(rng.choice(DESPEDIDAS[lang]))
         out.append(text)
+    df = df.copy()
+    df["model_text"] = out
+    return df
+
+
+def add_unknown_words(df, rate, seed):
+    """Cambia al azar una parte de las palabras por palabras inventadas (que quedan fuera del vocabulario).
+
+    En español real aparecen muchas palabras que el modelo nunca vio ("homologación", "receta"...), y la
+    BiLSTM había aprendido a asociar las palabras desconocidas con phishing. Con esto ve palabras
+    desconocidas en las dos clases por igual y deja de usarlas como pista.
+    """
+    rng = np.random.default_rng(seed)
+    out = []
+    for text in df.model_text:
+        words = text.split()
+        mask = rng.random(len(words)) < rate
+        out.append(" ".join(f"zq{rng.integers(1e9):x}" if m else w for w, m in zip(words, mask)))
     df = df.copy()
     df["model_text"] = out
     return df
@@ -103,21 +121,6 @@ def build_model(train_texts, vocab=VOCAB):
     return model
 
 
-def pick_threshold(y, p, min_precision=0.95):
-    """Umbral que da el mayor recall manteniendo la precisión por encima del mínimo."""
-    y = np.asarray(y)
-    best_t, best_key = 0.5, (-1.0, -1.0)
-    for t in np.arange(0.20, 0.81, 0.01):
-        pred = p >= t
-        tp = (pred & (y == 1)).sum()
-        prec = tp / max(pred.sum(), 1)
-        rec = tp / max((y == 1).sum(), 1)
-        f1 = 2 * prec * rec / max(prec + rec, 1e-9)
-        if prec >= min_precision and (rec, f1) > best_key:
-            best_t, best_key = float(t), (rec, f1)
-    return round(best_t, 2)
-
-
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--epochs", type=int, default=8)
@@ -127,17 +130,31 @@ def main():
     ap.add_argument("--vocab", type=int, default=VOCAB)
     ap.add_argument("--min_precision", type=float, default=0.95)
     ap.add_argument("--sin_saludos", action="store_true", help="no agregar saludos al entrenar")
+    ap.add_argument("--desconocidas", type=float, default=0.12,
+                    help="fracción de palabras que se cambian por desconocidas al entrenar (0 para no hacerlo)")
+    ap.add_argument("--extra", default="", help="carpeta con correos sintéticos (train.csv y val.csv) para sumar")
     a = ap.parse_args()
     keras.utils.set_random_seed(42)
 
     D = Path(a.data)
     tr, va, te = (pd.read_csv(D / f"{s}.csv") for s in ("train", "val", "test"))
+    if a.extra:
+        E = Path(a.extra)
+        cols = ["text", "model_text", "label", "source"]
+        tr = pd.concat([tr, pd.read_csv(E / "train.csv")[cols]], ignore_index=True).sample(frac=1, random_state=42)
+        va = pd.concat([va, pd.read_csv(E / "val.csv")[cols]], ignore_index=True)
+        print(f"Con sintéticos: {len(tr)} de entrenamiento, {len(va)} de validación")
+    # Se recalcula el texto del modelo con la limpieza actual (incluye quitar disfraces como "c l a v e").
     for d in (tr, va, te):
-        d["model_text"] = d["model_text"].fillna("").astype(str)
+        d["model_text"] = d["text"].fillna("").astype(str).map(for_model)
     if not a.sin_saludos:
         tr, va = add_greetings(tr, 1), add_greetings(va, 2)
 
+    # El vocabulario se arma con el texto original; el ruido se agrega después, así las palabras
+    # inventadas quedan fuera del vocabulario.
     model = build_model(X(tr), a.vocab)
+    if a.desconocidas > 0:
+        tr = add_unknown_words(tr, a.desconocidas, 3)
     model.summary()
     hist = model.fit(
         X(tr), tr.label.values, validation_data=(X(va), va.label.values),
@@ -146,9 +163,10 @@ def main():
     )
 
     pv = model.predict(X(va), batch_size=256, verbose=0).ravel()
-    thr = pick_threshold(va.label.values, pv, a.min_precision)
+    thr = best_accuracy_threshold(va.label.values, pv)
     pt = model.predict(X(te), batch_size=256, verbose=0).ravel()
-    res = {"umbral": thr, "precision_minima": a.min_precision, "saludos_al_entrenar": not a.sin_saludos,
+    res = {"umbral": thr, "criterio_umbral": "exactitud en validación", "saludos_al_entrenar": not a.sin_saludos,
+           "palabras_desconocidas_al_entrenar": a.desconocidas,
            "test": report(te.label, pt, te.source, thr),
            "falsas_alarmas_por_saludo": greeting_false_alarms(model, te, thr)}
 
