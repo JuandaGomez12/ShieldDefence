@@ -48,7 +48,8 @@ for t in texts:
                         for r in (recommendation(t, sig, True), recommendation(t, sig, False))]})
 OCR_CASES = ["Soporte <alertas@bancolombia-soporte top>", "https:/Ibancolombia-soporte top/personas/validar",
              "https: //nequi-ayuda com co/login", "visita www, davivienda com", "La reunión es en el salón B top.",
-             "HTTPS:/lsitio-falso xyz/LOGIN y correo pepe@empresa com"]
+             "HTTPS:/lsitio-falso xyz/LOGIN y correo pepe@empresa com", "https //bancolombia-verificacion top/login",
+             "https; //nequi-ayuda com/x", "Servidor HTTP/1.1 caído en http.//sitio xyz"]
 out.append({"ocr": [[c, fix_ocr_links(c)] for c in OCR_CASES]})
 json.dump(out, open(sys.argv[1], "w", encoding="utf-8"), ensure_ascii=False)
 print(len(out), "casos")
