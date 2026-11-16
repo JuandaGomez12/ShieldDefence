@@ -105,6 +105,20 @@ export function deobfuscate(text) {
   return { text, tricks, examples };
 }
 
+/* ---------------- ocrfix.py ---------------- */
+const OCR_TLDS = "com|co|net|org|top|xyz|info|live|click|site|app|edu|gov|io|me|link|online|biz|ru|cn|tk|icu|work|zip|store|shop|club|web|es|mx|ar|pe|cl|ec|us|uk";
+/** Arregla los enlaces que el OCR lee mal ("sitio top" -> "sitio.top", "https:/I" -> "https://"). */
+export function fixOcrLinks(text) {
+  return (text || "").split("\n").map((line) => {
+    if (!/https?\s*:|www\s*[.,]|@/i.test(line)) return line;
+    line = line.replace(/\b(https?)\s*:\s*\/\s*[\/Il1|]\s*/gi, (m, s) => s.toLowerCase() + "://");
+    line = line.replace(/\bwww\s*[.,]\s*/gi, "www.");
+    const rx = new RegExp("([A-Za-z0-9-]{2,})\\s+(" + OCR_TLDS + ")(?=[\\s/:.,;)>\\]]|$)", "g");
+    for (let i = 0; i < 2; i++) line = line.replace(rx, "$1.$2");
+    return line;
+  }).join("\n");
+}
+
 /* ---------------- preprocess.py ---------------- */
 const MAX_CHARS = 6000;
 const LIST_TAG = /^[ \t]*\[[^\]\n]{1,40}\][ \t]*/gm;
@@ -268,7 +282,7 @@ export function detect(text) {
       if (hidden) add("hidden_link", "Botón o enlace que no se ve",
         `invita a abrir algo ("${hidden.slice(0, 50)}") pero el enlace no aparece en el texto copiado; no se puede saber a dónde lleva.`, 15, hidden.slice(0, 50));
     }
-    const acc = first(/(verificar|verifique|verifica|confirmar|confirme|confirma|actualizar|actualice|actualiza|validar|valide|valida)\b.{0,30}?\b(informacion|datos|cuenta|acceso|registro|usuario)s?\b|(datos|cuentas?|registros?|informacion)( asociad\w+ a (las|los|su|tus|sus) cuentas?)? (institucional\w*|pendientes? de (actualizacion|confirmacion|verificacion))|siguen? utilizando (su|tu) cuenta|para no perder (el |tu |su )?acceso|verify (your )?(account|information|details)|confirm (that )?you (still )?use/, t);
+    const acc = first(/(verificar|verifique|verifica|confirmar|confirme|confirma|actualizar|actualice|actualiza|validar|valide|valida)\b.{0,30}?\b(informacion|datos|cuenta|acceso|registro|usuario)s?\b|(datos|cuentas?|registros?|informacion)( asociad\w+ a (las|los|su|tus|sus) cuentas?)? (institucional\w*|pendientes? de (actualizacion|confirmacion|verificacion))|siguen? utilizando (su|tu) cuenta|para no perder (el |tu |su )?acceso|(confirmacion|verificacion|actualizacion|validacion) de (los |sus |tus |la |su |tu )?(datos|informacion|registros?)|registros? incompletos?|respond\w* (a )?este (mensaje|correo) (indicando|con)( los| sus| tus)? (datos|numero|informacion|correo)|verify (your )?(account|information|details)|confirm (that )?you (still )?use/, t);
     if (acc) add("account_check", "Pide verificar o actualizar tu cuenta",
       `pide verificar, confirmar o actualizar tu cuenta o tus datos ("${acc.slice(0, 60)}"), el pretexto más usado para llevar a una página falsa de inicio de sesión.`, 15, acc.slice(0, 60));
     const sd = first(/(te|le|les) (comparto|compartio|ha compartido|envio) .{0,25}?(archivo|documento|formato|enlace|factura)|documento compartido|shared (a )?(file|document) with you|has shared|view (the )?document|inicia sesion con tu cuenta|sign in to (view|access)/, t);
@@ -388,6 +402,20 @@ const REVIEW_KEYS = ["hidden_link", "account_check", "shared_doc"];
 const REC_HIDDEN = "El correo trae un botón o enlace que no se ve al copiar el texto. Antes de abrirlo, pasa el mouse por encima (sin hacer clic) para ver a dónde lleva, o haz clic derecho, copia el enlace y pégalo aquí para revisarlo. Si te pide iniciar sesión, no lo hagas desde ahí: entra tú mismo a la página oficial.";
 const REC_ACCOUNT = "Te piden verificar o actualizar tu cuenta. No lo hagas desde enlaces ni respondiendo el correo: entra tú mismo al portal oficial escribiendo la dirección y, si tienes dudas, confírmalo con la oficina que dice escribirte por un teléfono o correo que ya conozcas.";
 
+function firstHost(email) {
+  for (const u of findUrls(deobfuscate(email).text)) {
+    const h = hostOf(u);
+    if (h) return h.startsWith("www.") ? h.slice(4) : h;
+  }
+  return "";
+}
+
+function recShared(email) {
+  const host = firstHost(email);
+  const donde = host ? `a un archivo en ${host}` : "a un archivo externo";
+  return `El correo te lleva ${donde}. Antes de abrirlo, confirma que conoces a quien lo envía y que ese es el sitio que esperas (por ejemplo drive.google.com, onedrive.live.com o el de tu universidad). Si para verlo te pide iniciar sesión, no lo hagas desde ahí.`;
+}
+
 /** Correo que el modelo no ve como fraude pero pide algo delicado: se muestra como "Revisa antes de abrir". */
 export function needsReview(signals, isPhishing) {
   return !isPhishing && signals.some((s) => REVIEW_KEYS.includes(s.key));
@@ -404,6 +432,7 @@ export function recommendation(email, signals, isPhishing) {
     }
     if (keys.has("hidden_link")) return REC_HIDDEN;
     if (keys.has("account_check")) return REC_ACCOUNT;
+    if (keys.has("shared_doc")) return recShared(email);
     if (bank) return `Parece un aviso real. Si tienes dudas, confírmalo en la app oficial de ${bank}, no desde enlaces del correo.`;
     return pick(REC_LEGIT);
   }
@@ -439,6 +468,11 @@ export function templateExplanation(email, isPhishing, prob, signals) {
   const byWeight = [...signals].sort((a, b) => b.weight - a.weight);
   if (isPhishing) {
     let points = byWeight.slice(0, 5).map((s) => `${s.title}: ${s.detail}`);
+    const linkKeys = ["mixed_domain", "brand_lookalike", "security_domain", "shortener", "odd_tld", "ip_url"];
+    const host = firstHost(email);
+    if (host && !signals.some((x) => linkKeys.includes(x.key)) && points.length < 5) {
+      points.push(`Enlace a revisar: lleva a ${host}, que no es claramente un sitio oficial; no lo abras sin confirmar a dónde va.`);
+    }
     if (!points.length) points = ["El estilo y lo que pide el correo se parecen a los correos de phishing con los que se entrenó el modelo."];
     return { explicacion: pick(signals.length ? OPEN_PHISH : OPEN_PHISH_NOSIG), senales: points, recomendacion: recommendation(email, signals, true) };
   }

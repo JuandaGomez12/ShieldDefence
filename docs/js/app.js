@@ -8,7 +8,7 @@ import {
   cleanRaw, detect, BiLSTM, Combiner, needsReview, SYSTEM, buildPrompt, templateExplanation, parseAnswer, consistent,
 } from "./shield-core.js";
 import { LSTM_BASE, LLM_REPO, LLM_MAX_TOKENS, LLM_ENABLED, TRANSFORMERS_URL } from "./config.js";
-import { extractText } from "./files.js";
+import { extractText, linksFromHtml, withHiddenLinks } from "./files.js";
 
 const $ = (id) => document.getElementById(id);
 const chat = $("chat"), messages = $("messages"), welcome = $("welcome"), form = $("form");
@@ -22,7 +22,7 @@ let combiner = null;
 /* ---------- Saludo según la hora ---------- */
 (function setGreeting() {
   const h = new Date().getHours();
-  const momento = h < 12 ? "Buenos días" : h < 19 ? "Buenas tardes" : "Buenas noches";
+  const momento = h < 5 ? "Buenas noches" : h < 12 ? "Buenos días" : h < 19 ? "Buenas tardes" : "Buenas noches";
   $("greeting").textContent = `${momento}, pega un correo o sube un pantallazo para revisarlo.`;
 })();
 
@@ -128,6 +128,17 @@ function escapeHtml(str) {
   return String(str).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
 const scrollToBottom = () => { chat.scrollTop = chat.scrollHeight; };
+/* Deja a la vista el comienzo de la respuesta (el veredicto), no el final: en celular la respuesta es más
+   alta que la pantalla y antes se veía solo el pie. Si la respuesta cabe, se ve completa. */
+function scrollToAnswer(msg) {
+  // Lo que tapa la parte de arriba del chat (la barra con el logo, si queda encima).
+  const header = document.querySelector("header");
+  const chatTop = chat.getBoundingClientRect().top;
+  const covered = header ? Math.max(0, header.getBoundingClientRect().bottom - chatTop) : 0;
+  const visible = chat.clientHeight - covered;
+  const target = chat.scrollTop + msg.getBoundingClientRect().top - chatTop - covered - 12;
+  chat.scrollTop = msg.offsetHeight <= visible ? Math.max(target, chat.scrollHeight - chat.clientHeight) : target;
+}
 const normalize = (t) => t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 const looksLikeEmail = (t) => t.length > 40 || /(https?:\/\/|www\.)/i.test(t);
 
@@ -201,7 +212,7 @@ async function explainWithLlm(r, box) {
   try {
     const out = await llm.generate(prompt, (text) => {
       const partial = parseAnswer(text + "\nRecomendación: ...");
-      if (partial) { exp.innerHTML = explanationHtml({ ...partial, recomendacion: /Recomendaci[oó]n:/i.test(text) ? parseAnswer(text)?.recomendacion : "..." }); scrollToBottom(); }
+      if (partial) { exp.innerHTML = explanationHtml({ ...partial, recomendacion: /Recomendaci[oó]n:/i.test(text) ? parseAnswer(text)?.recomendacion : "..." }); }
     });
     const parsed = parseAnswer(out.text);
     if (parsed && consistent(parsed, r.es_phishing)) {
@@ -243,6 +254,7 @@ async function runAnalysis(userHtml, getText) {
     if (cleanRaw(text).length < 20) throw new Error("no encontré suficiente texto para analizar.");
     const r = await analyze(text);
     body.innerHTML = buildAnalysisHtml(r, extracted);
+    scrollToAnswer(box);
     requestAnimationFrame(() => body.querySelectorAll(".risk-bar span").forEach((b) => { b.style.width = b.dataset.width + "%"; }));
     if (llm.state === "ready") await explainWithLlm(r, body);
     else if (llm.state === "loading") readyListeners.push(() => explainWithLlm(r, body));
@@ -250,7 +262,7 @@ async function runAnalysis(userHtml, getText) {
     body.innerHTML = `<p class="error">No pude analizar el correo: ${escapeHtml(err.message)}</p>`;
   } finally {
     setBusy(false);
-    scrollToBottom();
+    scrollToAnswer(box);
   }
 }
 
@@ -299,6 +311,22 @@ form.addEventListener("submit", (e) => {
 attachBtn.addEventListener("click", () => fileInput.click());
 fileInput.addEventListener("change", () => { handleFile(fileInput.files[0]); fileInput.value = ""; });
 input.addEventListener("paste", (e) => {
-  const item = [...(e.clipboardData?.items || [])].find((i) => i.type.startsWith("image/"));
-  if (item && !busy) { e.preventDefault(); handleFile(item.getAsFile()); }
+  const cd = e.clipboardData;
+  if (!cd || busy) return;
+  const plain = cd.getData("text/plain"), html = cd.getData("text/html");
+  if (plain.trim()) {
+    // Correo copiado de Gmail/Outlook: se agregan los enlaces reales de los botones ("Ver documento").
+    if (html) {
+      const text = withHiddenLinks(plain, linksFromHtml(html));
+      if (text !== plain) {
+        e.preventDefault();
+        input.setRangeText(text, input.selectionStart, input.selectionEnd, "end");
+        input.dispatchEvent(new Event("input"));
+      }
+    }
+    return;
+  }
+  // Solo una imagen (un pantallazo): se lee con OCR.
+  const item = [...cd.items].find((i) => i.type.startsWith("image/"));
+  if (item) { e.preventDefault(); handleFile(item.getAsFile()); }
 });

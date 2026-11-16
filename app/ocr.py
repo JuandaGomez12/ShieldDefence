@@ -6,6 +6,8 @@ from pathlib import Path
 
 from PIL import Image, ImageOps
 
+from shield_core.ocrfix import fix_ocr_links
+
 MAX_PDF_PAGES = 3
 
 
@@ -15,7 +17,7 @@ def _ocr_image(img: Image.Image) -> str:
     if img.width < 1400:  # los pantallazos pequeños se leen mejor ampliados
         f = 1400 / img.width
         img = img.resize((int(img.width * f), int(img.height * f)))
-    return pytesseract.image_to_string(img, lang="spa+eng")
+    return fix_ocr_links(pytesseract.image_to_string(img, lang="spa+eng"))
 
 
 def from_image(data: bytes) -> str:

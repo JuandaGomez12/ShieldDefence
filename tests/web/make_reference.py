@@ -9,6 +9,7 @@ from shield_core.signals import detect
 from shield_core.explain import build_prompt, parse_answer, recommendation, needs_review, _REC_LEGIT, _REC_PHISH, _REC_MONEY
 from shield_core.lstm_numpy import NumpyBiLSTM
 from shield_core.combine import Combiner
+from shield_core.ocrfix import fix_ocr_links
 
 df = pd.read_csv(ROOT / "data/processed/test.csv").sample(300, random_state=1)
 es = pd.read_csv(ROOT / "data/spanish_eval.csv")
@@ -26,7 +27,8 @@ MODELS = Path(sys.argv[2]) if len(sys.argv) > 2 else ROOT / "models"
 sys.path.insert(0, "/tmp/claude-0/s")
 try:
     from ia3 import IA3
-    texts += IA3
+    from user15 import EMAILS
+    texts += IA3 + EMAILS
 except ImportError:
     pass
 texts += pd.read_csv(ROOT / "data/spanish_blind3.csv").text.astype(str).tolist()
@@ -44,5 +46,9 @@ for t in texts:
                 "review": needs_review(sig, False),
                 "rec": [r if r.split(" Además")[0] not in _REC_LEGIT + _REC_PHISH + _REC_MONEY else None
                         for r in (recommendation(t, sig, True), recommendation(t, sig, False))]})
+OCR_CASES = ["Soporte <alertas@bancolombia-soporte top>", "https:/Ibancolombia-soporte top/personas/validar",
+             "https: //nequi-ayuda com co/login", "visita www, davivienda com", "La reunión es en el salón B top.",
+             "HTTPS:/lsitio-falso xyz/LOGIN y correo pepe@empresa com"]
+out.append({"ocr": [[c, fix_ocr_links(c)] for c in OCR_CASES]})
 json.dump(out, open(sys.argv[1], "w", encoding="utf-8"), ensure_ascii=False)
 print(len(out), "casos")
