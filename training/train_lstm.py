@@ -61,6 +61,24 @@ def add_greetings(df, seed, p=0.5):
     return df
 
 
+def add_unknown_words(df, rate, seed):
+    """Cambia al azar una parte de las palabras por palabras inventadas (que quedan fuera del vocabulario).
+
+    En español real aparecen muchas palabras que el modelo nunca vio ("homologación", "receta"...), y la
+    BiLSTM había aprendido a asociar las palabras desconocidas con phishing. Con esto ve palabras
+    desconocidas en las dos clases por igual y deja de usarlas como pista.
+    """
+    rng = np.random.default_rng(seed)
+    out = []
+    for text in df.model_text:
+        words = text.split()
+        mask = rng.random(len(words)) < rate
+        out.append(" ".join(f"zq{rng.integers(1e9):x}" if m else w for w, m in zip(words, mask)))
+    df = df.copy()
+    df["model_text"] = out
+    return df
+
+
 def greeting_false_alarms(model, te, thr):
     """De los correos legítimos de prueba que el modelo acierta, cuántos pasan a phishing al saludar."""
     legit = te[te.label == 0]
@@ -112,6 +130,8 @@ def main():
     ap.add_argument("--vocab", type=int, default=VOCAB)
     ap.add_argument("--min_precision", type=float, default=0.95)
     ap.add_argument("--sin_saludos", action="store_true", help="no agregar saludos al entrenar")
+    ap.add_argument("--desconocidas", type=float, default=0.12,
+                    help="fracción de palabras que se cambian por desconocidas al entrenar (0 para no hacerlo)")
     ap.add_argument("--extra", default="", help="carpeta con correos sintéticos (train.csv y val.csv) para sumar")
     a = ap.parse_args()
     keras.utils.set_random_seed(42)
@@ -129,7 +149,11 @@ def main():
     if not a.sin_saludos:
         tr, va = add_greetings(tr, 1), add_greetings(va, 2)
 
+    # El vocabulario se arma con el texto original; el ruido se agrega después, así las palabras
+    # inventadas quedan fuera del vocabulario.
     model = build_model(X(tr), a.vocab)
+    if a.desconocidas > 0:
+        tr = add_unknown_words(tr, a.desconocidas, 3)
     model.summary()
     hist = model.fit(
         X(tr), tr.label.values, validation_data=(X(va), va.label.values),
@@ -141,6 +165,7 @@ def main():
     thr = pick_threshold(va.label.values, pv, a.min_precision)
     pt = model.predict(X(te), batch_size=256, verbose=0).ravel()
     res = {"umbral": thr, "precision_minima": a.min_precision, "saludos_al_entrenar": not a.sin_saludos,
+           "palabras_desconocidas_al_entrenar": a.desconocidas,
            "test": report(te.label, pt, te.source, thr),
            "falsas_alarmas_por_saludo": greeting_false_alarms(model, te, thr)}
 

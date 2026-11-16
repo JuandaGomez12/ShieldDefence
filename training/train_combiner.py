@@ -27,8 +27,16 @@ from training.metrics import report  # noqa: E402
 from training.metrics import pick_threshold  # noqa: E402
 
 
-def lstm_probs(model, texts):
-    return np.array([model.predict(for_model(t)) for t in texts])
+def lstm_probs(model, texts, noise=0.0, seed=0):
+    """Probabilidad de la BiLSTM. Con noise > 0 cambia esa fracción de palabras por desconocidas."""
+    rng = np.random.default_rng(seed)
+    out = []
+    for t in texts:
+        mt = for_model(t)
+        if noise:
+            mt = " ".join("zqzq" if rng.random() < noise else w for w in mt.split())
+        out.append(model.predict(mt))
+    return np.array(out)
 
 
 def feats(texts, probs):
@@ -59,6 +67,10 @@ def main():
     ap.add_argument("--models", default=str(ROOT / "models"))
     ap.add_argument("--min_precision", type=float, default=0.95)
     ap.add_argument("--C", type=float, default=1.0)
+    ap.add_argument("--ruido", type=float, default=0.25,
+                    help="fracción de palabras desconocidas al calcular la LSTM en validación. En validación la LSTM "
+                         "casi no se equivoca y el combinador aprendería a confiar solo en ella; con ruido se simula "
+                         "un correo con vocabulario nuevo y aprende cuándo apoyarse en las reglas")
     a = ap.parse_args()
     M = Path(a.models)
     model = NumpyBiLSTM(M)
@@ -74,10 +86,13 @@ def main():
 
     print("Calculando la BiLSTM en validación, prueba y español...", flush=True)
     pv, pt, pe = lstm_probs(model, va.text), lstm_probs(model, te.text), lstm_probs(model, es.text)
+    pv_ruido = lstm_probs(model, va.text, a.ruido, 1)
     Xv, Xt, Xe = feats(va.text, pv), feats(te.text, pt), feats(es.text, pe)
+    Xv_ruido = feats(va.text, pv_ruido)
 
     lr = LogisticRegression(C=a.C, max_iter=2000, class_weight="balanced")
-    lr.fit(Xv, va.label.values)
+    # Se entrena con la validación limpia y con la versión con palabras desconocidas.
+    lr.fit(np.vstack([Xv, Xv_ruido]), np.concatenate([va.label.values, va.label.values]))
     cv = lr.predict_proba(Xv)[:, 1]
     thr = pick_threshold(va.label.values, cv, a.min_precision)
     ct, ce = lr.predict_proba(Xt)[:, 1], lr.predict_proba(Xe)[:, 1]
