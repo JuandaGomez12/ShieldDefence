@@ -8,17 +8,21 @@ from shield_core.preprocess import for_model
 from shield_core.signals import detect
 from shield_core.explain import build_prompt, parse_answer
 from shield_core.lstm_numpy import NumpyBiLSTM
+from shield_core.combine import Combiner
 
 df = pd.read_csv(ROOT / "data/processed/test.csv").sample(300, random_state=1)
 es = pd.read_csv(ROOT / "data/spanish_eval.csv")
 texts = list(df["text"].astype(str)) + list(es["text"].astype(str))
-m = NumpyBiLSTM(ROOT / "models")
+MODELS = Path(sys.argv[2]) if len(sys.argv) > 2 else ROOT / "models"
+m = NumpyBiLSTM(MODELS)
+comb = Combiner.load(MODELS)
 out = []
 for t in texts:
     sig = detect(t)
     p = float(m.predict(for_model(t)))
     out.append({"text": t, "model": for_model(t), "keys": [s.key for s in sig],
                 "evidence": [s.evidence for s in sig], "prob": p,
-                "prompt": build_prompt(t, p >= 0.5, p, sig)})
+                "prompt": build_prompt(t, p >= 0.5, p, sig),
+                "comb": comb.prob(t, p, sig) if comb else None})
 json.dump(out, open(sys.argv[1], "w", encoding="utf-8"), ensure_ascii=False)
 print(len(out), "casos")

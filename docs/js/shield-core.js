@@ -253,6 +253,37 @@ export function consistent(parsed, isPhishing) {
   return !/\b(es|parece) (un )?(intento de )?phishing\b|es (un )?fraude|es una estafa/.test(t);
 }
 
+/* ---------------- combine.py ---------------- */
+export const SIGNAL_KEYS = ["mixed_domain", "brand_lookalike", "security_domain", "shortener", "odd_tld", "ip_url",
+  "no_https", "urgency", "threat", "credentials", "generic_greeting", "prize", "money_request", "shared_doc",
+  "secrecy", "deadline", "click"];
+export const FEATURES = ["lstm_logit", ...SIGNAL_KEYS, "n_urls"];
+
+function logit(p, eps = 1e-6) {
+  p = Math.min(Math.max(p, eps), 1 - eps);
+  return Math.log(p / (1 - p));
+}
+
+export function combinerFeatures(email, pLstm, signals) {
+  signals = signals || detect(email);
+  const keys = new Set(signals.map((s) => s.key));
+  return [logit(pLstm), ...SIGNAL_KEYS.map((k) => (keys.has(k) ? 1 : 0)), Math.min(findUrls(email).length, 3)];
+}
+
+/** Decisión final: BiLSTM + señales de las reglas (regresión logística, ver combine.py). */
+export class Combiner {
+  constructor(cfg) {
+    if (JSON.stringify(cfg.features) !== JSON.stringify(FEATURES)) throw new Error("combinador con otras variables");
+    this.w = cfg.pesos; this.b = cfg.sesgo; this.threshold = cfg.umbral;
+  }
+  prob(email, pLstm, signals) {
+    const x = combinerFeatures(email, pLstm, signals);
+    let z = this.b;
+    for (let i = 0; i < x.length; i++) z += this.w[i] * x[i];
+    return 1 / (1 + Math.exp(-z));
+  }
+}
+
 /* ---------------- lstm_numpy.py ---------------- */
 const sigmoid = (x) => 1 / (1 + Math.exp(-x));
 

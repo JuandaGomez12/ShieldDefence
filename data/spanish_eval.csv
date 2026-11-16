@@ -1,55 +1,55 @@
-text,label,note
+text,label,note,categoria
 "Asunto: Su cuenta será suspendida
 Estimado cliente, hemos detectado actividad inusual en su cuenta. Para evitar la suspensión permanente, debe verificar sus datos inmediatamente. Haga clic en el siguiente enlace para confirmar su identidad: https://banc0-seguridad.com/verificacion
-Tiene 24 horas para realizar el proceso.",1,Ejemplo del prototipo (banco falso)
+Tiene 24 horas para realizar el proceso.",1,Ejemplo del prototipo (banco falso),phishing_banco
 "Asunto: ¡Felicidades! Has ganado un premio
 Estimado usuario, Nequi te informa que has ganado un bono de $500.000. Para reclamarlo debes ingresar tu clave en el siguiente enlace antes de 24 horas: http://nequi-seguridad.xyz/premio
-Si no lo reclamas, tu cuenta será bloqueada. Equipo Nequi",1,Captura del Hito 2
+Si no lo reclamas, tu cuenta será bloqueada. Equipo Nequi",1,Captura del Hito 2,phishing_banco
 "Asunto: Formato de vacaciones
-Hola Juan, soy Laura de recursos humanos. Te comparto el nuevo formato de vacaciones, revísalo y me confirmas antes del viernes: https://docs-empresa.com/formato",1,Phishing bien escrito que las reglas no detectaban
+Hola Juan, soy Laura de recursos humanos. Te comparto el nuevo formato de vacaciones, revísalo y me confirmas antes del viernes: https://docs-empresa.com/formato",1,Phishing bien escrito que las reglas no detectaban,phishing_sutil
 "Asunto: Actualización de nómina
-Buenos días, por cambios en el sistema de pagos necesitamos que actualices tu cuenta bancaria para recibir el salario de este mes. Ingresa con tu usuario y contraseña del correo institucional en https://portal-nomina-escuela.com antes del 30. Gracias, Talento Humano",1,Suplantación de nómina
+Buenos días, por cambios en el sistema de pagos necesitamos que actualices tu cuenta bancaria para recibir el salario de este mes. Ingresa con tu usuario y contraseña del correo institucional en https://portal-nomina-escuela.com antes del 30. Gracias, Talento Humano",1,Suplantación de nómina,phishing_banco
 "Asunto: Paquete retenido
-Su envío no pudo ser entregado por falta de pago de $4.900 en impuestos. Pague ahora en https://bit.ly/envio-co para evitar la devolución del paquete. Servientrega",1,Paquete falso con enlace acortado
+Su envío no pudo ser entregado por falta de pago de $4.900 en impuestos. Pague ahora en https://bit.ly/envio-co para evitar la devolución del paquete. Servientrega",1,Paquete falso con enlace acortado,phishing_otros
 "Asunto: Problema con tu suscripción
-Hola, no pudimos procesar el pago de tu plan de Netflix. Actualiza los datos de tu tarjeta en las próximas 48 horas para no perder el acceso: http://netflix-pagos.top/actualizar",1,Suscripción falsa
+Hola, no pudimos procesar el pago de tu plan de Netflix. Actualiza los datos de tu tarjeta en las próximas 48 horas para no perder el acceso: http://netflix-pagos.top/actualizar",1,Suscripción falsa,phishing_cuenta
 "Asunto: Urgente
-Hola, estoy en una reunión y no puedo hablar. Necesito que me compres cuatro tarjetas de regalo de $100.000 para un cliente y me mandes los códigos por aquí lo antes posible. Te lo devuelvo hoy. Gracias, Andrés (Gerente)",1,Fraude del jefe
+Hola, estoy en una reunión y no puedo hablar. Necesito que me compres cuatro tarjetas de regalo de $100.000 para un cliente y me mandes los códigos por aquí lo antes posible. Te lo devuelvo hoy. Gracias, Andrés (Gerente)",1,Fraude del jefe,fraude_jefe
 "Asunto: Verificación de su cuenta de correo
 Su buzón ha superado el límite de almacenamiento. Para seguir recibiendo mensajes, valide su cuenta aquí: http://192.168.40.12/webmail/login
-Mesa de ayuda TI",1,Correo con IP
+Mesa de ayuda TI",1,Correo con IP,phishing_banco
 "Asunto: Reembolso de la DIAN
-Usted tiene un saldo a favor de $1.250.000 por su declaración de renta. Para recibir la devolución ingrese su número de cuenta y documento en el siguiente formulario: https://dian-devoluciones.info/formulario",1,Entidad del Estado falsa
+Usted tiene un saldo a favor de $1.250.000 por su declaración de renta. Para recibir la devolución ingrese su número de cuenta y documento en el siguiente formulario: https://dian-devoluciones.info/formulario",1,Entidad del Estado falsa,phishing_otros
 "Asunto: Documento compartido contigo
-Carlos te ha compartido el archivo ""Notas finales 2026.xlsx"". Para abrirlo, inicia sesión con tu cuenta de Microsoft: https://onedrive-share-docs.com/view?id=88421",1,Documento compartido falso
+Carlos te ha compartido el archivo ""Notas finales 2026.xlsx"". Para abrirlo, inicia sesión con tu cuenta de Microsoft: https://onedrive-share-docs.com/view?id=88421",1,Documento compartido falso,phishing_cuenta
 "Asunto: Inversión segura
-Querido amigo, tengo una oportunidad única de inversión en criptomonedas con ganancias del 40% mensual garantizadas. Solo debes transferir un mínimo de $2.000.000 a la cuenta que te indique. Responde rápido, los cupos son limitados.",1,Estafa de inversión sin enlace
+Querido amigo, tengo una oportunidad única de inversión en criptomonedas con ganancias del 40% mensual garantizadas. Solo debes transferir un mínimo de $2.000.000 a la cuenta que te indique. Responde rápido, los cupos son limitados.",1,Estafa de inversión sin enlace,phishing_otros
 "Asunto: Confirmación de compra
-Gracias por su compra de un iPhone 15 por $5.800.000. Si usted no realizó esta compra, llame de inmediato al 601 555 0199 para cancelarla y proteger su tarjeta.",1,Factura falsa que pide llamar
+Gracias por su compra de un iPhone 15 por $5.800.000. Si usted no realizó esta compra, llame de inmediato al 601 555 0199 para cancelarla y proteger su tarjeta.",1,Factura falsa que pide llamar,phishing_sutil
 "Asunto: Reunión del proyecto
-Hola Juan, te recuerdo que la reunión del proyecto de PTIA es el jueves a las 2 p. m. en el bloque G. Yo llevo el avance del documento y tú el del prototipo. Saludos, Camilo",0,Captura del Hito 2
+Hola Juan, te recuerdo que la reunión del proyecto de PTIA es el jueves a las 2 p. m. en el bloque G. Yo llevo el avance del documento y tú el del prototipo. Saludos, Camilo",0,Captura del Hito 2,otros_legit
 "Asunto: Cambio de clave
-Estimado cliente, su clave fue cambiada hoy. Si no fue usted, comuníquese de inmediato con la línea oficial que aparece en su tarjeta.",0,Aviso real del banco (falso positivo de las reglas)
+Estimado cliente, su clave fue cambiada hoy. Si no fue usted, comuníquese de inmediato con la línea oficial que aparece en su tarjeta.",0,Aviso real del banco (falso positivo de las reglas),banco_real
 "Asunto: Notas del parcial
-Buenas tardes, ya están publicadas las notas del segundo parcial en Moodle. Si tienen alguna duda, pueden pasar a la oficina el martes en el horario de atención. Saludos, profesora Martínez",0,Aviso de una profesora
+Buenas tardes, ya están publicadas las notas del segundo parcial en Moodle. Si tienen alguna duda, pueden pasar a la oficina el martes en el horario de atención. Saludos, profesora Martínez",0,Aviso de una profesora,universidad
 "Asunto: Tu pedido va en camino
-Hola Juan, tu pedido #48213 salió del centro de distribución y llegará entre el 14 y el 16 de noviembre. Puedes ver el estado en la sección Mis compras de la aplicación.",0,Envío real sin enlace
+Hola Juan, tu pedido #48213 salió del centro de distribución y llegará entre el 14 y el 16 de noviembre. Puedes ver el estado en la sección Mis compras de la aplicación.",0,Envío real sin enlace,compras
 "Asunto: Factura electrónica
-Adjuntamos la factura electrónica correspondiente al servicio de internet del mes de octubre por $89.900. La fecha límite de pago es el 20 de noviembre. Este es un mensaje automático, por favor no lo responda.",0,Factura de servicio
+Adjuntamos la factura electrónica correspondiente al servicio de internet del mes de octubre por $89.900. La fecha límite de pago es el 20 de noviembre. Este es un mensaje automático, por favor no lo responda.",0,Factura de servicio,compras
 "Asunto: Cumpleaños de mi mamá
-Hola tía, el sábado vamos a hacerle una comida sorpresa a mi mamá en la casa a las 7. ¿Puedes llevar el postre? Avísame si puedes llegar temprano para ayudar a decorar.",0,Correo familiar
+Hola tía, el sábado vamos a hacerle una comida sorpresa a mi mamá en la casa a las 7. ¿Puedes llevar el postre? Avísame si puedes llegar temprano para ayudar a decorar.",0,Correo familiar,personal
 "Asunto: Inscripción de materias
-Estudiante, le recordamos que las inscripciones para el siguiente periodo académico abren el lunes 24 de noviembre a las 8:00 a. m. Consulte su turno en el sistema académico de la universidad.",0,Aviso de la universidad
+Estudiante, le recordamos que las inscripciones para el siguiente periodo académico abren el lunes 24 de noviembre a las 8:00 a. m. Consulte su turno en el sistema académico de la universidad.",0,Aviso de la universidad,universidad
 "Asunto: Confirmación de cita
-Su cita médica de medicina general quedó agendada para el miércoles 19 de noviembre a las 10:30 a. m. en la sede norte. Recuerde llegar 15 minutos antes con su documento de identidad.",0,Cita médica
+Su cita médica de medicina general quedó agendada para el miércoles 19 de noviembre a las 10:30 a. m. en la sede norte. Recuerde llegar 15 minutos antes con su documento de identidad.",0,Cita médica,salud_gobierno
 "Asunto: Código de verificación
-Tu código de verificación es 482193. Si no solicitaste este código, puedes ignorar este mensaje. Nunca compartas este código con nadie.",0,Código de verificación legítimo
+Tu código de verificación es 482193. Si no solicitaste este código, puedes ignorar este mensaje. Nunca compartas este código con nadie.",0,Código de verificación legítimo,banco_real
 "Asunto: Entrega del informe
-Hola equipo, les comparto el borrador del informe en la carpeta del proyecto. Por favor revisen la sección de resultados antes del viernes y dejen sus comentarios. Gracias.",0,Correo de trabajo
+Hola equipo, les comparto el borrador del informe en la carpeta del proyecto. Por favor revisen la sección de resultados antes del viernes y dejen sus comentarios. Gracias.",0,Correo de trabajo,trabajo
 "Asunto: Boletín semanal
-Esta semana en la biblioteca: nuevos libros de inteligencia artificial, taller de citación APA el jueves y horario extendido por parciales. Para dejar de recibir este boletín, escriba a la biblioteca.",0,Boletín
+Esta semana en la biblioteca: nuevos libros de inteligencia artificial, taller de citación APA el jueves y horario extendido por parciales. Para dejar de recibir este boletín, escriba a la biblioteca.",0,Boletín,boletin
 "Asunto: Partido del domingo
-Parce, el partido es el domingo a las 9 en la cancha del barrio. Lleva el balón y la camiseta azul. Ya somos diez, falta uno.",0,Mensaje de amigos
+Parce, el partido es el domingo a las 9 en la cancha del barrio. Lleva el balón y la camiseta azul. Ya somos diez, falta uno.",0,Mensaje de amigos,personal
 "Hola, buenos días.
 
 Les recuerdo que la fecha límite para entregar el trabajo de la asignatura es este viernes 20 de noviembre.
@@ -59,34 +59,129 @@ Por favor, revisen que el documento incluya los nombres de todos los integrantes
 Si tienen alguna duda sobre las indicaciones, pueden escribirme por este medio.
 
 Saludos,
-Profesor de la asignatura",0,Recordatorio de entrega de un profesor (con saludo)
+Profesor de la asignatura",0,Recordatorio de entrega de un profesor (con saludo),universidad
 "Hola a todos,
 
 La clase del jueves se pasa al salón E-301 porque el laboratorio está en mantenimiento. Traigan el portátil con el entorno instalado.
 
 Gracias,
-Monitora del curso",0,Cambio de salón de la monitora
+Monitora del curso",0,Cambio de salón de la monitora,universidad
 "Buenas tardes, profe.
 
 Le escribo para preguntarle si la nota del segundo parcial ya está en el sistema. No me aparece en la plataforma.
 
 Muchas gracias,
-Camila",0,Estudiante pregunta por una nota
+Camila",0,Estudiante pregunta por una nota,universidad
 "Hola equipo,
 
 Comparto el acta de la reunión de hoy. Quedamos en que cada uno sube su parte al repositorio antes del lunes y el martes revisamos todo juntos.
 
 Un abrazo,
-Andrés",0,Acta de reunión del equipo
+Andrés",0,Acta de reunión del equipo,trabajo
 "Hola, buenos días.
 
 Su cuenta institucional será desactivada hoy por inactividad. Para mantenerla activa ingrese su usuario y contraseña en http://escuelaing-correo.top/validar antes de las 5 pm.
 
 Saludos,
-Mesa de ayuda",1,Phishing de cuenta institucional (con saludo)
+Mesa de ayuda",1,Phishing de cuenta institucional (con saludo),phishing_cuenta
 "Hola María,
 
 Estoy en una reunión y no puedo contestar llamadas. Necesito que me compres tres tarjetas de regalo de 200.000 pesos y me envíes los códigos por aquí. Te los devuelvo hoy.
 
 Gracias,
-El director",1,Fraude del jefe con saludo
+El director",1,Fraude del jefe con saludo,fraude_jefe
+"Buenos días, profe Ramírez. Le comparto el enlace del repositorio con el código del laboratorio 3. Quedó todo en la rama main y el README explica cómo correrlo. Muchas gracias, Felipe",0,Estudiante envía repositorio al profesor,universidad
+"Buenos días a todos. Mañana no habrá clase presencial porque estaré en un congreso en Medellín. Les dejo en la plataforma un taller corto que deben resolver en grupos y entregar el próximo martes. Nos vemos la otra semana. Saludos, Patricia Moreno",0,Profesora cancela clase y deja taller,universidad
+"Hola, buenos días. Para el parcial del jueves pueden traer una hoja de fórmulas escrita a mano por ambos lados. No se permite calculadora programable. El examen empieza puntual a las 7 a. m. en el G-102. Éxitos en el estudio.",0,Indicaciones de parcial,universidad
+"Buenas tardes. Les informo que las monitorías de Cálculo Integral de esta semana serán el miércoles y el viernes de 2 a 4 p. m. en la sala de estudio del bloque C. Pueden llegar sin inscripción previa. Atentamente, Coordinación de Matemáticas",0,Horario de monitorías,universidad
+"Querido estudiante: te recordamos que la encuesta de evaluación docente está abierta hasta el 30 de noviembre. Puedes responderla desde el sistema académico, en la opción Evaluaciones. Tus respuestas son anónimas y nos ayudan a mejorar. Vicerrectoría Académica",0,Encuesta de evaluación docente,universidad
+"Hola Sara, ¿te quedó la nota del laboratorio de física? A mí me pusieron 3.8 y no entiendo bien por qué me quitaron puntos en el análisis de errores. ¿Vamos juntas a revisarlo con el profesor el lunes?",0,Compañera pregunta por nota,universidad
+Buenos días. La biblioteca informa que el libro 'Introducción a los algoritmos' que tiene en préstamo vence el 22 de noviembre. Puede renovarlo una vez desde el catálogo en línea o entregarlo en el mostrador. Biblioteca Jorge Álvarez Lleras,0,Vencimiento de préstamo de biblioteca,universidad
+"Buenas noches, profe. Le escribo porque no pude subir la entrega a tiempo: la plataforma se cayó entre las 11:40 y las 11:58. Le adjunto el archivo y un pantallazo del error. Quedo atento a lo que me diga. Gracias, Mateo Rojas",0,Estudiante explica entrega tardía,universidad
+"Hola a todos. Les recuerdo que el viernes es la sustentación del proyecto final. Cada grupo tiene 15 minutos de presentación y 5 de preguntas. El orden de los grupos lo publico mañana. Por favor lleguen 10 minutos antes. Saludos, Profesor de la asignatura",0,Recordatorio de sustentación,universidad
+"Cordial saludo. Bienestar Universitario invita a la jornada de donación de sangre el 25 de noviembre en la plazoleta central, de 8 a. m. a 4 p. m. Recuerde desayunar bien y llevar su documento. ¡Gracias por donar vida!",0,Jornada de donación de sangre,universidad
+Buenos días. Confirmamos que su solicitud de homologación de la asignatura Física I fue aprobada por el consejo de programa. El cambio se verá reflejado en su historia académica en los próximos 5 días hábiles. Oficina de Registro,0,Homologación aprobada,universidad
+"Hola, buenos días, ¿cómo están? Les cuento que ya califiqué el segundo taller. En general les fue muy bien; los errores más comunes fueron en la normalización de la base de datos. El jueves dedicamos la primera media hora a revisarlo. Un saludo.",0,Profesor comenta resultados del taller,universidad
+"Buenos días, equipo. Les comparto la agenda del comité de mañana: 1) avance del proyecto de facturación, 2) presupuesto 2027, 3) varios. Nos vemos a las 9 en la sala 4. Carolina",0,Agenda de comité,trabajo
+"Hola Andrés, buen día. ¿Me confirmas si el cliente ya aprobó la propuesta? Necesito saberlo para programar al equipo la próxima semana. Gracias.",0,Pregunta sobre propuesta a un cliente,trabajo
+"Buenas tardes. Les recuerdo que el plazo para legalizar los gastos de viaje de octubre vence este viernes. Deben adjuntar las facturas originales en el formato de siempre y entregarlas a contabilidad. Cordialmente, Área Financiera",0,Legalización de gastos de viaje,trabajo
+"Buenos días, Laura. Te cuento que el proveedor de papelería confirmó que el pedido llega el jueves en la mañana. Ya le pedí a recepción que lo reciba. Cualquier cosa me avisas.",0,Confirmación de pedido de un proveedor,trabajo
+Hola a todos. El sábado tenemos la integración de fin de año en la finca de Subachoque. El bus sale a las 8 a. m. desde la oficina. Confirmen asistencia en el formulario que les compartí por Teams. ¡Los esperamos!,0,Integración de fin de año,trabajo
+"Buenos días. Seguridad de la Información recuerda que nunca debe compartir su contraseña con nadie, ni siquiera con el área de sistemas. Si recibe un correo sospechoso, repórtelo con el botón 'Reportar phishing' de Outlook.",0,Campaña interna de seguridad,trabajo
+"Buenas, Diego. Revisé el informe y está muy bien. Solo cambia la gráfica de la página 4, que tiene los meses desordenados, y lo mandamos al cliente. Buen trabajo.",0,Jefe revisa un informe,trabajo
+Buenos días. Mesa de Ayuda informa que el sábado de 10 p. m. a 2 a. m. se actualizará el servidor de archivos. Guarde su trabajo antes de salir el viernes. No es necesario realizar ninguna otra acción.,0,Mantenimiento de servidor,trabajo
+"Hola, buenos días. Adjunto la cuenta de cobro del mes de noviembre por los servicios de diseño, con la planilla de seguridad social. Quedo atenta a cualquier ajuste. Muchas gracias, Juliana Cárdenas",0,Contratista envía cuenta de cobro,trabajo
+"Buenas tardes, Natalia. Te confirmo la entrevista para el cargo de analista de datos el martes 24 a las 10 a. m., de forma virtual. El enlace de Teams te llega en una invitación aparte. Éxitos, Talento Humano",0,Confirmación de entrevista de trabajo,trabajo
+"Equipo, buen día. Recuerden que hoy es el último día para registrar las horas del mes en el sistema. El reporte de nómina se cierra a las 5 p. m. Gracias.",0,Recordatorio de registrar horas,trabajo
+"Buenos días, mijo. ¿Cómo amaneció? Le cuento que el domingo hacemos almuerzo por el cumpleaños de su papá. Vengan a la una. Traiga hielo si puede. Lo quiero mucho, mamá",0,Mamá invita a almuerzo,personal
+"Hola parcero, ¿qué más? ¿Vamos el sábado a ver el partido donde Juan? Él pone la casa y nosotros llevamos la comida. Avísame para cuadrar.",0,Amigo invita a ver partido,personal
+"Buenas noches, tía. Ya le transferí lo de la cuota del regalo de la abuela, son 50.000 pesos. Me confirma si le llegó. Un abrazo.",0,Sobrina confirma transferencia familiar,personal
+"Hola Cami, te mando la receta del pastel de zanahoria que te gustó. Son 3 huevos, 2 tazas de harina, 1 de azúcar y 2 zanahorias ralladas. Al horno 40 minutos. Me cuentas cómo te queda.",0,Receta entre amigas,personal
+"Buenos días, vecinos. Les recuerdo que la asamblea del conjunto es el sábado a las 9 a. m. en el salón comunal. Si no pueden asistir, pueden enviar un poder firmado con otro propietario. Administración",0,Asamblea del conjunto,personal
+"Hola, buenos días. Soy Paula, la profesora de inglés de su hija. Quería contarle que ha mejorado mucho este periodo y que la vamos a proponer para el concurso de oratoria. Felicitaciones.",0,Profesora del colegio felicita,personal
+"Qué tal, Sebas. Te devuelvo el libro que me prestaste el lunes en la oficina. Me encantó el final. ¿Tienes la segunda parte?",0,Amigo devuelve un libro,personal
+Buenas tardes. Le escribo del consultorio veterinario para recordarle que Max tiene la vacuna anual el jueves a las 4 p. m. Si necesita cambiar la hora nos puede llamar. Feliz tarde.,0,Recordatorio de veterinaria,personal
+"Bancolombia le informa: compra por $85.400 en EXITO CALLE 80 con su tarjeta débito *4512 el 14/11/2026 a las 18:32. Si no reconoce esta transacción, llame a la Sucursal Telefónica.",0,Notificación real de compra,banco_real
+"Hola Juan, tu pago de la tarjeta de crédito por $1.250.000 fue aplicado exitosamente. Puedes ver el nuevo cupo disponible en la app. Gracias por confiar en Davivienda.",0,Confirmación de pago de tarjeta,banco_real
+"Buenos días. Nequi te recuerda que nunca te vamos a pedir tu clave ni el código que te llega por mensaje. Si alguien te lo pide, es un fraude. Cuida tu plata.",0,Campaña de seguridad de Nequi,banco_real
+"Estimada cliente: su certificado tributario del año gravable 2025 ya está disponible en la Sucursal Virtual Personas, en el menú Documentos. BBVA Colombia",0,Certificado tributario disponible,banco_real
+Buenas tardes. Tu solicitud de crédito de libre inversión fue aprobada por $8.000.000. El desembolso se hará en tu cuenta de ahorros en las próximas 24 horas. Banco de Bogotá,0,Crédito aprobado,banco_real
+Recibiste $350.000 de CAMILA TORRES en tu cuenta Nequi. ¡Ya puedes usarlos!,0,Transferencia recibida,banco_real
+"Hola. Tu código de seguridad para ingresar a la app de Daviplata es 482913. Vence en 5 minutos. No lo compartas con nadie, ni siquiera con funcionarios de Daviplata.",0,Código de ingreso legítimo,banco_real
+Buenos días. Le informamos que el 20 de noviembre entre las 12 a. m. y las 4 a. m. la app y la sucursal virtual no estarán disponibles por mejoras. Los cajeros funcionarán normalmente. Banco de Occidente,0,Aviso de mantenimiento de un banco,banco_real
+¡Hola Daniel! Tu pedido de Rappi está en camino. El repartidor Jhon llega en aproximadamente 15 minutos. Puedes seguirlo en la app.,0,Pedido de Rappi en camino,compras
+"Buenos días. Tu factura de Enel del periodo octubre-noviembre por $142.300 vence el 28 de noviembre. Puedes pagar por PSE en la app, en bancos o en puntos Efecty. Si ya pagaste, no tengas en cuenta este mensaje.",0,Factura de energía,compras
+"Hola María, gracias por comprar en Falabella. Tu devolución por $219.900 fue aprobada y se reflejará en tu tarjeta en un plazo de 5 a 10 días hábiles.",0,Devolución aprobada,compras
+Tu paquete con guía 7845120036 de Servientrega fue entregado hoy a las 11:20 a. m. y lo recibió PORTERÍA. Gracias por usar nuestros servicios.,0,Paquete entregado,compras
+"Buenos días. Le confirmamos su reserva en el Hotel Las Palmas de Santa Marta del 20 al 23 de diciembre, habitación doble con desayuno. Check-in a partir de las 3 p. m. ¡Lo esperamos!",0,Reserva de hotel,compras
+"Hola, ¿qué tal? Tu suscripción a Spotify Premium se renovó por $16.900. Tu próxima fecha de cobro es el 15 de diciembre. Puedes administrar tu plan en tu cuenta.",0,Renovación de Spotify,compras
+Buen día. Su vehículo tiene el SOAT vigente hasta el 3 de enero de 2027. Le recomendamos renovarlo con anticipación en cualquier aseguradora autorizada.,0,Recordatorio de SOAT,compras
+"Hola, buenas tardes. Su cita para la revisión técnico-mecánica quedó para el lunes 23 a las 9 a. m. en el CDA de la Calle 13. Lleve la tarjeta de propiedad y el SOAT.",0,Cita de revisión técnico-mecánica,compras
+"Buenos días. Le recordamos su cita de control de odontología el viernes 21 de noviembre a las 2:40 p. m. en la sede Chapinero. Si no puede asistir, cancélela desde la app de la EPS.",0,Recordatorio de cita odontológica,salud_gobierno
+Cordial saludo. La Registraduría informa que su cédula de ciudadanía ya está lista para reclamar en la sede donde hizo el trámite. Horario de atención: lunes a viernes de 8 a. m. a 4 p. m.,0,Cédula lista para reclamar,salud_gobierno
+Buenos días. Su formulario de declaración de renta fue presentado correctamente ante la DIAN el 12 de octubre. Puede descargar la copia desde los servicios en línea con su usuario.,0,Confirmación de declaración de renta,salud_gobierno
+"Hola. Le informamos que ya puede descargar su certificado de afiliación a la EPS desde nuestra página web, opción Certificados, con su número de documento.",0,Certificado de afiliación EPS,salud_gobierno
+"Buenas tardes. El resultado de sus exámenes de laboratorio del 10 de noviembre ya está disponible. Puede consultarlo en el portal de pacientes. Si tiene dudas, consulte con su médico tratante.",0,Resultados de laboratorio,salud_gobierno
+Buenos días. La Secretaría de Movilidad le recuerda que el pico y placa para particulares cambia a partir del 1 de diciembre. Consulte el nuevo esquema en la página oficial.,0,Aviso de pico y placa,salud_gobierno
+"Buenos días, lector. Estas son las noticias más importantes de hoy: el Congreso aprobó la reforma, el dólar cerró a la baja y la Selección se prepara para el próximo partido. Lea más en nuestra página. Para dejar de recibir este boletín, haga clic en 'cancelar suscripción'.",0,Boletín de noticias,boletin
+"Hola, comunidad. Este mes en el club de lectura vamos a leer 'Cien años de soledad'. Nos reunimos el último jueves de cada mes en la biblioteca del barrio. ¡Los esperamos con café!",0,Club de lectura,boletin
+Buenos días. En el curso de Python para principiantes de esta semana aprenderás listas y diccionarios. Te esperamos en la sesión en vivo del miércoles a las 7 p. m. El enlace está en tu panel de estudiante.,0,Boletín de un curso en línea,boletin
+"Hola, ¡llegó el Black Friday! Hasta 40% de descuento en tecnología y hogar solo este fin de semana en nuestras tiendas y en la página oficial. Aplican términos y condiciones.",0,Promoción legítima de una tienda,boletin
+"Buenos días. Su cuenta de Bancolombia presenta un bloqueo preventivo por movimientos inusuales. Para desbloquearla debe validar su identidad en el siguiente enlace: http://bancolombia-personas.validacion-segura.com/inicio. Si no lo hace hoy, la cuenta será cancelada.",1,Bloqueo preventivo falso,phishing_banco
+"Hola, buenas tardes. Nequi te informa que ganaste un bono de $200.000 por ser cliente frecuente. Para recibirlo ingresa tu número y tu clave en https://nequi-bonos.top. Oferta válida por 24 horas.",1,Bono falso de Nequi,phishing_banco
+"Estimado usuario, su tarjeta de crédito Davivienda fue usada en una compra de $2.350.000 en el exterior. Si usted no la realizó, cancele la compra ingresando sus datos aquí: http://davivienda.cancelar-compra.info",1,Compra falsa en el exterior,phishing_banco
+"Buenos días. Le escribimos del área de seguridad del Banco de Bogotá. Por una actualización de nuestros sistemas, necesitamos que confirme el número de su tarjeta, la fecha de vencimiento y el código de seguridad respondiendo a este correo.",1,Pide datos de tarjeta por correo,phishing_banco
+"Hola Juan, te llegó un pago por $1.800.000 a tu cuenta, pero quedó retenido por falta de verificación. Para liberarlo confirma tus datos en bit.ly/pago-retenido-co",1,Pago retenido falso,phishing_banco
+Daviplata: su cuenta fue suspendida por no actualizar datos. Reactívela ya en www.daviplata-co.web.app o perderá su saldo.,1,Suspensión falsa de Daviplata,phishing_banco
+Buenas tardes. Para seguir usando su tarjeta débito debe cambiarla por una con chip nuevo. Agende la entrega a domicilio llenando el formulario con sus datos y su clave actual en http://tarjetas-nuevas.click/bbva,1,Cambio de tarjeta falso,phishing_banco
+"Querido cliente, por fin de año tiene un descuento del 50% en su cuota de manejo. Para activarlo responda este correo con su número de cédula, el número de la tarjeta y la clave de 4 dígitos.",1,Descuento falso que pide clave,phishing_banco
+"Buenos días, Laura. ¿Estás en la oficina? Necesito que me ayudes con algo urgente pero no puedo hablar porque estoy en junta con la gerencia. Respóndeme por aquí apenas puedas.",1,"Fraude del jefe, primer contacto",fraude_jefe
+"Hola Andrés, estoy en un vuelo y no tengo cómo entrar al banco. Necesito que pagues hoy a este proveedor $12.500.000 para no perder el contrato. Te mando los datos de la cuenta. No lo comentes con nadie hasta que yo llegue, es un negocio delicado.",1,Transferencia urgente pedida por el jefe,fraude_jefe
+Buenas tardes. Soy el rector. Estoy en una reunión con el ministerio y necesito un favor personal: compra cinco tarjetas de regalo de Google Play de $100.000 para unos invitados. Mándame foto de los códigos. Te reintegro mañana.,1,Tarjetas de regalo pedidas por el rector,fraude_jefe
+"Hola, buenos días. Te escribe Carlos, de la gerencia. Necesito que me envíes hoy la lista de empleados con número de cédula y cuenta de nómina para una auditoría confidencial. No copies a recursos humanos.",1,Pide datos de nómina con discreción,fraude_jefe
+"Buenos días, Natalia. Cambié de banco y necesito que el pago de mi salario de este mes se haga a la nueva cuenta. Te paso los datos: Banco Popular, ahorros 220-458712-33. Por favor confírmame cuando quede actualizado. Gracias, Ricardo (Gerente Comercial)",1,Cambio de cuenta de nómina falso,fraude_jefe
+Buenas. Estimado proveedor: por auditoría interna cambiamos la cuenta para el pago de facturas. A partir de hoy consignen únicamente a la cuenta corriente 0012-5544-22 del Banco Caja Social a nombre de Comercializadora JM. Agradecemos su pronta gestión.,1,Cambio de cuenta de proveedor falso,fraude_jefe
+"Hola mami, cambié de número, este es el nuevo. Se me dañó el celular. ¿Me puedes prestar 600 mil para pagar el arriendo hoy? Te los devuelvo el viernes. Consígnalos a esta cuenta que es de un amigo.",1,Suplantación de un hijo,fraude_jefe
+Buenos días. Le escribo del área de soporte de WhatsApp. Su cuenta será verificada. En un momento le llegará un código de 6 dígitos por SMS; por favor envíenos ese código para completar la verificación.,1,Pide el código de WhatsApp,fraude_jefe
+"Buenos días. Su contraseña del correo institucional vence hoy. Para conservarla, ingrese a https://escuelaing-edu.co-renovar.com y escriba su contraseña actual y la nueva.",1,Vencimiento de contraseña falso,phishing_cuenta
+"Hola, buenas tardes. Netflix no pudo cobrar tu membresía. Para no perder tus perfiles actualiza tu tarjeta en http://netflix-co-pagos.xyz antes de las 11:59 p. m.",1,Pago fallido de Netflix falso,phishing_cuenta
+Microsoft 365: Tiene 7 mensajes retenidos en cuarentena. Revíselos iniciando sesión con su cuenta en https://outlook-cuarentena.live/revisar. Los mensajes se eliminarán en 48 horas.,1,Mensajes en cuarentena falsos,phishing_cuenta
+"Buenas noches. Detectamos un inicio de sesión desde Rusia en su cuenta de Google. Si no fue usted, proteja su cuenta aquí: http://google-seguridad.cuenta-alerta.com",1,Alerta falsa de Google,phishing_cuenta
+"Hola, ¿cómo estás? Te compartí la carpeta con las fotos del grupo en Drive. Para verlas tienes que iniciar sesión con tu correo y contraseña: https://drive-fotos.web-share.info/carpeta",1,Carpeta compartida falsa,phishing_cuenta
+"Estimado estudiante: debido a una actualización del sistema académico, debe confirmar su usuario y contraseña en el siguiente formulario para no perder su inscripción de materias: https://forms-registro.top/escuela",1,Formulario falso de registro académico,phishing_cuenta
+Apple ID: su cuenta fue bloqueada por motivos de seguridad. Para desbloquearla verifique su información en http://appleid.apple.com-verificar.info,1,Bloqueo falso de Apple ID,phishing_cuenta
+"Buen día. Facebook: su página será eliminada por infringir derechos de autor. Si cree que es un error, apele en https://fb-apelacion.click antes de 24 horas.",1,Apelación falsa de Facebook,phishing_cuenta
+DIAN. Señor contribuyente: usted tiene una sanción pendiente por no declarar renta. Descargue el requerimiento en http://dian-requerimientos.com/descargar para evitar el embargo de sus cuentas.,1,Sanción falsa de la DIAN,phishing_otros
+Buenos días. Servientrega le informa que su envío no pudo ser entregado por dirección incompleta. Para reprogramarlo pague $4.900 en https://servientrega-envios.top/pago,1,Envío falso de Servientrega,phishing_otros
+Hola. Simit: usted tiene un comparendo electrónico por exceso de velocidad. Pague con 50% de descuento hoy en http://simit-pagos.co-multas.xyz,1,Comparendo falso,phishing_otros
+¡Felicitaciones! Su número de celular fue elegido ganador de una moto en el sorteo aniversario de Éxito. Para el envío debe pagar el impuesto de $380.000 a la cuenta que le indicaremos. Responda con su nombre completo y ciudad.,1,Sorteo falso que pide pago,phishing_otros
+Buenos días. Somos una empresa internacional y estamos buscando personas para trabajar desde casa calificando productos. Ganará entre 200.000 y 500.000 pesos diarios. Para empezar solo debe hacer un depósito inicial de $150.000. Escríbanos por WhatsApp.,1,Oferta de empleo falsa,phishing_otros
+"Hola, buenas tardes. Invierte desde $500.000 en nuestra plataforma de trading con inteligencia artificial y recibe ganancias garantizadas del 30% cada mes. Ya tenemos más de 10.000 inversionistas en Colombia. Cupos limitados.",1,Inversión falsa,phishing_otros
+Ministerio del Trabajo: usted es beneficiario del Ingreso Solidario 2026 por $1.500.000. Para el giro registre su número de cuenta y clave en https://ingreso-solidario.gov-co.site,1,Subsidio falso del gobierno,phishing_otros
+Buenas tardes. Su vehículo tiene un embargo pendiente. Para más información descargue el documento adjunto (Embargo_2026.zip) y comuníquese con el juzgado al número que aparece allí.,1,Embargo falso con adjunto,phishing_otros
+"Buenos días. Como parte de nuestro proceso anual de actualización, le pedimos amablemente confirmar sus datos de contacto y de pago. El formulario es corto y está disponible en https://actualizacion-clientes.co/form. Agradecemos su colaboración y le deseamos un excelente día.",1,Actualización de datos sutil,phishing_sutil
+"Hola, buenos días. Te escribo de Talento Humano. Estamos cambiando el proveedor de nómina y para que tu pago de diciembre salga sin novedades necesitamos que confirmes tu cuenta bancaria en el nuevo portal: https://nomina-empleados.net/ingreso. Cualquier duda me escribes.",1,Migración de nómina falsa,phishing_sutil
+Buenos días. Le compartimos la factura electrónica No. FE-20391 correspondiente a sus servicios de noviembre. Puede consultarla y descargarla en el siguiente portal ingresando con su correo y contraseña: https://facturacion-electronica.app/consulta,1,Factura electrónica falsa,phishing_sutil
+"Hola, ¿qué tal? Soy de la coordinación del programa. Estamos actualizando la base de datos de egresados para enviarles ofertas laborales. Por favor completa tus datos, incluyendo tu usuario institucional y contraseña, en https://egresados-registro.com.",1,Registro falso de egresados,phishing_sutil
+"Buenas tardes. Para continuar con su proceso de selección, le pedimos realizar la prueba psicotécnica en línea. Antes de comenzar, debe registrar una tarjeta de crédito para validar su identidad (no se hará ningún cobro). Ingrese aquí: https://pruebas-seleccion.work/inicio",1,Proceso de selección que pide tarjeta,phishing_sutil
+"Buenos días. Le informamos que tiene un reembolso pendiente por $326.000 de su EPS por pagos dobles. Para recibirlo, confirme su número de cuenta y la clave de su banca en línea en https://reembolsos-eps.info.",1,Reembolso falso de la EPS,phishing_sutil

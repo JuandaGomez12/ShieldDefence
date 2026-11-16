@@ -21,7 +21,7 @@ from keras import layers  # noqa: E402
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from shield_core.preprocess import for_model  # noqa: E402
-from training.metrics import report  # noqa: E402
+from training.metrics import pick_threshold, report  # noqa: E402,F401
 
 VOCAB = 30000
 MAX_LEN = 300
@@ -103,21 +103,6 @@ def build_model(train_texts, vocab=VOCAB):
     return model
 
 
-def pick_threshold(y, p, min_precision=0.95):
-    """Umbral que da el mayor recall manteniendo la precisión por encima del mínimo."""
-    y = np.asarray(y)
-    best_t, best_key = 0.5, (-1.0, -1.0)
-    for t in np.arange(0.20, 0.81, 0.01):
-        pred = p >= t
-        tp = (pred & (y == 1)).sum()
-        prec = tp / max(pred.sum(), 1)
-        rec = tp / max((y == 1).sum(), 1)
-        f1 = 2 * prec * rec / max(prec + rec, 1e-9)
-        if prec >= min_precision and (rec, f1) > best_key:
-            best_t, best_key = float(t), (rec, f1)
-    return round(best_t, 2)
-
-
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--epochs", type=int, default=8)
@@ -127,11 +112,18 @@ def main():
     ap.add_argument("--vocab", type=int, default=VOCAB)
     ap.add_argument("--min_precision", type=float, default=0.95)
     ap.add_argument("--sin_saludos", action="store_true", help="no agregar saludos al entrenar")
+    ap.add_argument("--extra", default="", help="carpeta con correos sintéticos (train.csv y val.csv) para sumar")
     a = ap.parse_args()
     keras.utils.set_random_seed(42)
 
     D = Path(a.data)
     tr, va, te = (pd.read_csv(D / f"{s}.csv") for s in ("train", "val", "test"))
+    if a.extra:
+        E = Path(a.extra)
+        cols = ["text", "model_text", "label", "source"]
+        tr = pd.concat([tr, pd.read_csv(E / "train.csv")[cols]], ignore_index=True).sample(frac=1, random_state=42)
+        va = pd.concat([va, pd.read_csv(E / "val.csv")[cols]], ignore_index=True)
+        print(f"Con sintéticos: {len(tr)} de entrenamiento, {len(va)} de validación")
     for d in (tr, va, te):
         d["model_text"] = d["model_text"].fillna("").astype(str)
     if not a.sin_saludos:

@@ -43,7 +43,9 @@ def main():
         blobs.append(raw)
         offset += len(raw)
     (out / "lstm_web.bin").write_bytes(b"".join(blobs))
+    comb = M / "combinador.json"
     meta = {"vocab": vocab["vocab"], "max_len": vocab["max_len"], "umbral": cfg["umbral"],
+            "combinador": json.load(open(comb)) if comb.exists() else None,
             "metricas": {"test": cfg.get("test"), "espanol": cfg.get("spanish")}, "tensors": tensors}
     json.dump(meta, open(out / "lstm_web.json", "w", encoding="utf-8"), ensure_ascii=False)
     print(f"Exportado en {out}: {offset / 2**20:.1f} MB de pesos")
@@ -53,7 +55,9 @@ def main():
         api = HfApi(token=os.getenv("HF_TOKEN"))
         api.create_repo(a.push_to, repo_type="model", exist_ok=True)
         api.upload_folder(folder_path=str(out), repo_id=a.push_to, commit_message="BiLSTM para la versión web")
-        for f in ("lstm_pesos.npz", "lstm_vocab.json", "lstm_config.json"):
+        for f in ("lstm_pesos.npz", "lstm_vocab.json", "lstm_config.json", "combinador.json", "combinador_eval.json"):
+            if not (M / f).exists():
+                continue
             api.upload_file(path_or_fileobj=str(M / f), path_in_repo=f"numpy/{f}", repo_id=a.push_to)
         print("Subido a https://huggingface.co/" + a.push_to)
 
