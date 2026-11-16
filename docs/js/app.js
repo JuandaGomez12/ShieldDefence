@@ -8,7 +8,7 @@ import {
   cleanRaw, detect, BiLSTM, Combiner, needsReview, SYSTEM, buildPrompt, templateExplanation, parseAnswer, consistent,
 } from "./shield-core.js";
 import { LSTM_BASE, LLM_REPO, LLM_MAX_TOKENS, LLM_ENABLED, TRANSFORMERS_URL } from "./config.js";
-import { extractText } from "./files.js";
+import { extractText, linksFromHtml, withHiddenLinks } from "./files.js";
 
 const $ = (id) => document.getElementById(id);
 const chat = $("chat"), messages = $("messages"), welcome = $("welcome"), form = $("form");
@@ -299,6 +299,22 @@ form.addEventListener("submit", (e) => {
 attachBtn.addEventListener("click", () => fileInput.click());
 fileInput.addEventListener("change", () => { handleFile(fileInput.files[0]); fileInput.value = ""; });
 input.addEventListener("paste", (e) => {
-  const item = [...(e.clipboardData?.items || [])].find((i) => i.type.startsWith("image/"));
-  if (item && !busy) { e.preventDefault(); handleFile(item.getAsFile()); }
+  const cd = e.clipboardData;
+  if (!cd || busy) return;
+  const plain = cd.getData("text/plain"), html = cd.getData("text/html");
+  if (plain.trim()) {
+    // Correo copiado de Gmail/Outlook: se agregan los enlaces reales de los botones ("Ver documento").
+    if (html) {
+      const text = withHiddenLinks(plain, linksFromHtml(html));
+      if (text !== plain) {
+        e.preventDefault();
+        input.setRangeText(text, input.selectionStart, input.selectionEnd, "end");
+        input.dispatchEvent(new Event("input"));
+      }
+    }
+    return;
+  }
+  // Solo una imagen (un pantallazo): se lee con OCR.
+  const item = [...cd.items].find((i) => i.type.startsWith("image/"));
+  if (item) { e.preventDefault(); handleFile(item.getAsFile()); }
 });

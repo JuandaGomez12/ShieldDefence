@@ -8,7 +8,7 @@ import random
 import re
 
 from .deobfuscate import deobfuscate
-from .signals import detect, norm
+from .signals import detect, find_urls, host_of, norm
 
 SYSTEM = (
     "Eres ShieldAI, el asistente de ShieldDefence. Recibes un correo, el resultado de un "
@@ -111,6 +111,22 @@ _REC_ACCOUNT = ("Te piden verificar o actualizar tu cuenta. No lo hagas desde en
                 "escribirte por un teléfono o correo que ya conozcas.")
 
 
+def _first_host(email):
+    for u in find_urls(deobfuscate(email)[0]):
+        h = host_of(u)
+        if h:
+            return h[4:] if h.startswith("www.") else h
+    return ""
+
+
+def _rec_shared(email):
+    host = _first_host(email)
+    donde = f"a un archivo en {host}" if host else "a un archivo externo"
+    return (f"El correo te lleva {donde}. Antes de abrirlo, confirma que conoces a quien lo envía y que ese es el sitio que "
+            "esperas (por ejemplo drive.google.com, onedrive.live.com o el de tu universidad). Si para verlo te pide iniciar "
+            "sesión, no lo hagas desde ahí.")
+
+
 def needs_review(signals, is_phishing):
     """Correo que el modelo no ve como fraude pero pide algo delicado: se muestra como "Revisa antes de abrir"."""
     return not is_phishing and bool({s.key for s in signals} & REVIEW_KEYS)
@@ -131,6 +147,8 @@ def recommendation(email, signals, is_phishing, rng=None):
             return _REC_HIDDEN
         if "account_check" in keys:
             return _REC_ACCOUNT
+        if "shared_doc" in keys:
+            return _rec_shared(email)
         if bank:
             return f"Parece un aviso real. Si tienes dudas, confírmalo en la app oficial de {bank}, no desde enlaces del correo."
         return rng.choice(_REC_LEGIT)
@@ -189,6 +207,11 @@ def template_explanation(email: str, is_phishing: bool, prob: float, signals=Non
     if is_phishing:
         opening = rng.choice(_OPEN_PHISH if signals else _OPEN_PHISH_NOSIG)
         points = [f"{s.title}: {s.detail}" for s in sorted(signals, key=lambda s: -s.weight)[:5]]
+        link_keys = {"mixed_domain", "brand_lookalike", "security_domain", "shortener", "odd_tld", "ip_url"}
+        host = _first_host(email)
+        if host and not ({x.key for x in signals} & link_keys) and len(points) < 5:
+            points.append(f"Enlace a revisar: lleva a {host}, que no es claramente un sitio oficial; no lo abras sin "
+                          "confirmar a dónde va.")
         if not points:
             points = ["El estilo y lo que pide el correo se parecen a los correos de phishing con los que se entrenó el modelo."]
     else:

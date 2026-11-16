@@ -153,6 +153,9 @@ def detect(text: str):
                 r"(datos|cuentas?|registros?|informacion)( asociad\w+ a (las|los|su|tus|sus) cuentas?)? "
                 r"(institucional\w*|pendientes? de (actualizacion|confirmacion|verificacion))|"
                 r"siguen? utilizando (su|tu) cuenta|para no perder (el |tu |su )?acceso|"
+                r"(confirmacion|verificacion|actualizacion|validacion) de (los |sus |tus |la |su |tu )?(datos|informacion|registros?)|"
+                r"registros? incompletos?|"
+                r"respond\w* (a )?este (mensaje|correo) (indicando|con)( los| sus| tus)? (datos|numero|informacion|correo)|"
                 r"verify (your )?(account|information|details)|confirm (that )?you (still )?use", t)
     if ev:
         add("account_check", "Pide verificar o actualizar tu cuenta",
