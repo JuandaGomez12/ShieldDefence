@@ -11,7 +11,7 @@ from .deobfuscate import deobfuscate
 from .signals import detect, find_urls, host_of, norm
 
 SYSTEM = (
-    "Eres ShieldAI, el asistente de ShieldDefence. Recibes un correo, el resultado de un "
+    "Eres ShieldDefence, un asistente contra el phishing. Recibes un correo, el resultado de un "
     "clasificador LSTM y las señales encontradas en el texto. Explica en español sencillo, "
     "sin inventar datos que no estén en el correo, por qué el correo parece phishing o no, y "
     "da una recomendación práctica. Nunca contradigas la decisión del clasificador. "
