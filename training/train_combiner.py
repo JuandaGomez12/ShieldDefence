@@ -15,7 +15,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from sklearn.linear_model import LogisticRegression
+from scipy.optimize import minimize
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -43,6 +43,39 @@ def feats(texts, probs):
     return np.array([features(clean_raw(t), p, detect(clean_raw(t))) for t, p in zip(texts, probs)])
 
 
+class BoundedLogReg:
+    """Regresión logística donde las señales de riesgo solo pueden subir la probabilidad (peso >= 0).
+
+    Sin esta restricción, si en validación la LSTM ya acertaba un caso, la regresión podía darle peso negativo
+    a una señal (por ejemplo, a "dominio que imita una marca") y un correo con un dominio falso terminaba
+    con menos probabilidad de phishing. El único peso libre es el de número de enlaces.
+    """
+
+    def __init__(self, C=1.0, free=("n_urls",)):
+        self.C, self.free = C, set(free)
+
+    def fit(self, X, y):
+        X, y = np.asarray(X, float), np.asarray(y, float)
+        sw = np.where(y == 1, len(y) / (2 * y.sum()), len(y) / (2 * (len(y) - y.sum())))  # clases balanceadas
+        Xb = np.hstack([X, np.ones((len(X), 1))])
+
+        def loss(w):
+            z = Xb @ w
+            l = np.sum(sw * (np.logaddexp(0, z) - y * z)) + 0.5 / self.C * np.sum(w[:-1] ** 2)
+            g = Xb.T @ (sw * (1 / (1 + np.exp(-z)) - y))
+            g[:-1] += w[:-1] / self.C
+            return l, g
+
+        bounds = [(None, None) if f in self.free else (0, None) for f in FEATURES] + [(None, None)]
+        r = minimize(loss, np.zeros(Xb.shape[1]), jac=True, method="L-BFGS-B", bounds=bounds)
+        self.coef_, self.intercept_ = r.x[None, :-1], r.x[-1:]
+        return self
+
+    def predict_proba(self, X):
+        p = 1 / (1 + np.exp(-(np.asarray(X, float) @ self.coef_[0] + self.intercept_[0])))
+        return np.column_stack([1 - p, p])
+
+
 def evaluate(name, df, p, thr, show_errors=False):
     pred = p >= thr
     ok = pred == df.label.values.astype(bool)
@@ -67,7 +100,7 @@ def main():
     ap.add_argument("--models", default=str(ROOT / "models"))
     ap.add_argument("--min_precision", type=float, default=0.95)
     ap.add_argument("--C", type=float, default=1.0)
-    ap.add_argument("--ruido", type=float, default=0.25,
+    ap.add_argument("--ruido", type=float, default=0.35,
                     help="fracción de palabras desconocidas al calcular la LSTM en validación. En validación la LSTM "
                          "casi no se equivoca y el combinador aprendería a confiar solo en ella; con ruido se simula "
                          "un correo con vocabulario nuevo y aprende cuándo apoyarse en las reglas")
@@ -90,11 +123,16 @@ def main():
     Xv, Xt, Xe = feats(va.text, pv), feats(te.text, pt), feats(es.text, pe)
     Xv_ruido = feats(va.text, pv_ruido)
 
-    lr = LogisticRegression(C=a.C, max_iter=2000, class_weight="balanced")
+    lr = BoundedLogReg(C=a.C)
     # Se entrena con la validación limpia y con la versión con palabras desconocidas.
     lr.fit(np.vstack([Xv, Xv_ruido]), np.concatenate([va.label.values, va.label.values]))
     cv = lr.predict_proba(Xv)[:, 1]
-    thr = pick_threshold(va.label.values, cv, a.min_precision)
+    # Umbral que maximiza la exactitud en validación (con y sin palabras desconocidas): así pesan igual
+    # las falsas alarmas y el phishing que se escapa.
+    cv_ruido = lr.predict_proba(Xv_ruido)[:, 1]
+    yy, pp = np.concatenate([va.label.values] * 2), np.concatenate([cv, cv_ruido])
+    grid = np.arange(0.05, 0.96, 0.01)
+    thr = round(float(grid[np.argmax([((pp >= t) == yy).mean() for t in grid])]), 2)
     ct, ce = lr.predict_proba(Xt)[:, 1], lr.predict_proba(Xe)[:, 1]
 
     pesos = dict(zip(FEATURES, [round(float(w), 4) for w in lr.coef_[0]]))
