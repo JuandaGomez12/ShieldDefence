@@ -47,7 +47,7 @@ function looksLikeEmail(text) {
 function localReply(text) {
   const t = normalize(text).trim();
   if (/^(hola|buenas|hey|buenos dias|buenas tardes|buenas noches)\b/.test(t) && text.length < 30) {
-    return "<p>¡Hola! Soy ShieldAI. Pega aquí un correo o sube un pantallazo o PDF con el botón del clip y te diré si parece phishing.</p>";
+    return "<p>¡Hola! Soy ShieldDefence. Pega aquí un correo o sube un pantallazo o PDF con el botón del clip y te diré si parece phishing.</p>";
   }
   if (/(gracias|thanks|genial|perfecto)/.test(t) && text.length < 60) {
     return "<p>¡Con gusto! Si recibes otro correo sospechoso, pégalo aquí y lo reviso. 🛡️</p>";
@@ -116,7 +116,7 @@ async function callApi(url, options) {
 function addMessage(type, html) {
   const el = document.createElement("div");
   el.className = `msg ${type}`;
-  el.innerHTML = `<div class="author">${type === "user" ? "Tú" : "ShieldAI"}</div><div class="body">${html}</div>`;
+  el.innerHTML = `<div class="author">${type === "user" ? "Tú" : "ShieldDefence"}</div><div class="body">${html}</div>`;
   messages.appendChild(el);
   scrollToBottom();
   return el;
