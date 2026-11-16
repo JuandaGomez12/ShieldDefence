@@ -27,16 +27,21 @@ from training.metrics import report  # noqa: E402
 from training.metrics import pick_threshold  # noqa: E402
 
 
+KERAS = None  # si existe models/lstm.keras se usa por lotes (mucho más rápido); da lo mismo que NumPy
+
+
 def lstm_probs(model, texts, noise=0.0, seed=0):
     """Probabilidad de la BiLSTM. Con noise > 0 cambia esa fracción de palabras por desconocidas."""
     rng = np.random.default_rng(seed)
-    out = []
+    mts = []
     for t in texts:
         mt = for_model(t)
         if noise:
             mt = " ".join("zqzq" if rng.random() < noise else w for w in mt.split())
-        out.append(model.predict(mt))
-    return np.array(out)
+        mts.append(mt)
+    if KERAS is not None:
+        return KERAS.predict(np.array(mts, dtype=object), batch_size=256, verbose=0).ravel()
+    return np.array([model.predict(mt) for mt in mts])
 
 
 def feats(texts, probs):
@@ -128,6 +133,7 @@ def main():
     ap.add_argument("--models", default=str(ROOT / "models"))
     ap.add_argument("--min_precision", type=float, default=0.95)
     ap.add_argument("--C", type=float, default=1.0)
+    ap.add_argument("--solo_numpy", action="store_true", help="no usar Keras aunque exista lstm.keras")
     ap.add_argument("--disfrazados", type=float, default=0.2,
                     help="fracción de correos de phishing de validación que se agregan disfrazados")
     ap.add_argument("--ruido", type=float, default=0.35,
@@ -137,6 +143,12 @@ def main():
     a = ap.parse_args()
     M = Path(a.models)
     model = NumpyBiLSTM(M)
+    global KERAS
+    if (M / "lstm.keras").exists() and not a.solo_numpy:
+        import os
+        os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "2")
+        import keras
+        KERAS = keras.models.load_model(M / "lstm.keras")
     lstm_thr = json.load(open(M / "lstm_config.json"))["umbral"]
 
     D = Path(a.data)

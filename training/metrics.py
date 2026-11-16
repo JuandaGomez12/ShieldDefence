@@ -38,3 +38,10 @@ def pick_threshold(y, p, min_precision=0.95):
         if prec >= min_precision and (rec, f1) > best_key:
             best_t, best_key = float(t), (rec, f1)
     return round(best_t, 2)
+
+
+def best_accuracy_threshold(y, p):
+    """Umbral con la mayor exactitud: pesan igual las falsas alarmas y el phishing que se escapa."""
+    y, p = np.asarray(y), np.asarray(p)
+    grid = np.arange(0.05, 0.96, 0.01)
+    return round(float(grid[int(np.argmax([((p >= t) == y).mean() for t in grid]))]), 2)

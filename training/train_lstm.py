@@ -21,7 +21,7 @@ from keras import layers  # noqa: E402
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from shield_core.preprocess import for_model  # noqa: E402
-from training.metrics import pick_threshold, report  # noqa: E402,F401
+from training.metrics import best_accuracy_threshold, pick_threshold, report  # noqa: E402,F401
 
 VOCAB = 30000
 MAX_LEN = 300
@@ -163,9 +163,9 @@ def main():
     )
 
     pv = model.predict(X(va), batch_size=256, verbose=0).ravel()
-    thr = pick_threshold(va.label.values, pv, a.min_precision)
+    thr = best_accuracy_threshold(va.label.values, pv)
     pt = model.predict(X(te), batch_size=256, verbose=0).ravel()
-    res = {"umbral": thr, "precision_minima": a.min_precision, "saludos_al_entrenar": not a.sin_saludos,
+    res = {"umbral": thr, "criterio_umbral": "exactitud en validación", "saludos_al_entrenar": not a.sin_saludos,
            "palabras_desconocidas_al_entrenar": a.desconocidas,
            "test": report(te.label, pt, te.source, thr),
            "falsas_alarmas_por_saludo": greeting_false_alarms(model, te, thr)}
