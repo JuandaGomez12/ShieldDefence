@@ -137,10 +137,31 @@ def detect(text: str):
     if ev:
         add("money_request", "Pide mover dinero",
             f"busca que la persona envíe dinero, compre algo o invierta (\"{ev}\").", 20, ev)
+    # Botón o enlace que se perdió al copiar el texto ("[Consultar documento]", "desde el siguiente acceso").
+    hidden = ""
+    if not find_urls(text):
+        hidden = _first(r"\[[^\]\n]{0,30}(consultar|ver|acceder|abrir|descargar|ingresar|iniciar|verificar|revisar|"
+                        r"confirmar|actualizar|validar|click|view|open|verify|sign in|log ?in)[^\]\n]{0,30}\]|"
+                        r"(desde|en|a traves de|mediante) (el|este) (siguiente )?(acceso|enlace|boton|link|vinculo)|"
+                        r"(haz|haga|da|de) clic (en el boton|aqui|abajo)|click (here|below|the button)", t)
+        if hidden:
+            add("hidden_link", "Botón o enlace que no se ve",
+                f"invita a abrir algo (\"{hidden[:50]}\") pero el enlace no aparece en el texto copiado; no se puede "
+                "saber a dónde lleva.", 15, hidden[:50])
+    ev = _first(r"(verificar|verifique|verifica|confirmar|confirme|confirma|actualizar|actualice|actualiza|validar|"
+                r"valide|valida)\b.{0,30}?\b(informacion|datos|cuenta|acceso|registro|usuario)s?\b|"
+                r"(datos|cuentas?|registros?|informacion)( asociad\w+ a (las|los|su|tus|sus) cuentas?)? "
+                r"(institucional\w*|pendientes? de (actualizacion|confirmacion|verificacion))|"
+                r"siguen? utilizando (su|tu) cuenta|para no perder (el |tu |su )?acceso|"
+                r"verify (your )?(account|information|details)|confirm (that )?you (still )?use", t)
+    if ev:
+        add("account_check", "Pide verificar o actualizar tu cuenta",
+            f"pide verificar, confirmar o actualizar tu cuenta o tus datos (\"{ev[:60]}\"), el pretexto más usado para "
+            "llevar a una página falsa de inicio de sesión.", 15, ev[:60])
     ev = _first(r"(te|le|les) (comparto|compartio|ha compartido|envio) .{0,25}?(archivo|documento|formato|enlace|factura)|"
                 r"documento compartido|shared (a )?(file|document) with you|has shared|view (the )?document|"
                 r"inicia sesion con tu cuenta|sign in to (view|access)", t)
-    if ev and find_urls(text):
+    if ev and (find_urls(text) or hidden):
         add("shared_doc", "Documento compartido con enlace externo",
             f"invita a abrir un archivo en un enlace externo (\"{ev}\"), una forma común de robar contraseñas.", 15, ev)
     ev = _first(r"no (puedo|podre) (hablar|contestar)|estoy en una reunion|que quede entre nosotros|confidencial|"

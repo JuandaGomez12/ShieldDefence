@@ -101,6 +101,21 @@ def _find_brand(text, table):
     return best[1] if best else None
 
 
+# Señales que, aunque el modelo no vea fraude, ameritan revisar antes de abrir o responder.
+REVIEW_KEYS = {"hidden_link", "account_check", "shared_doc"}
+_REC_HIDDEN = ("El correo trae un botón o enlace que no se ve al copiar el texto. Antes de abrirlo, pasa el mouse por encima "
+               "(sin hacer clic) para ver a dónde lleva, o haz clic derecho, copia el enlace y pégalo aquí para revisarlo. "
+               "Si te pide iniciar sesión, no lo hagas desde ahí: entra tú mismo a la página oficial.")
+_REC_ACCOUNT = ("Te piden verificar o actualizar tu cuenta. No lo hagas desde enlaces ni respondiendo el correo: entra tú "
+                "mismo al portal oficial escribiendo la dirección y, si tienes dudas, confírmalo con la oficina que dice "
+                "escribirte por un teléfono o correo que ya conozcas.")
+
+
+def needs_review(signals, is_phishing):
+    """Correo que el modelo no ve como fraude pero pide algo delicado: se muestra como "Revisa antes de abrir"."""
+    return not is_phishing and bool({s.key for s in signals} & REVIEW_KEYS)
+
+
 def recommendation(email, signals, is_phishing, rng=None):
     """Recomendación según el tipo de engaño y la marca o entidad que menciona el correo."""
     rng = rng or random.Random()
@@ -112,6 +127,10 @@ def recommendation(email, signals, is_phishing, rng=None):
         if keys & {"money_request", "impersonation"} or re.search(r"\b\d+ ?mil\b|\$ ?\d|\bpesos\b|\bplata\b|transferi|consign|\bnequi\b|daviplata", t):
             return ("Parece normal. Aun así, si te piden enviar plata, confírmalo con una llamada a la persona, al número "
                     "que ya tenías guardado, antes de hacerlo.")
+        if "hidden_link" in keys:
+            return _REC_HIDDEN
+        if "account_check" in keys:
+            return _REC_ACCOUNT
         if bank:
             return f"Parece un aviso real. Si tienes dudas, confírmalo en la app oficial de {bank}, no desde enlaces del correo."
         return rng.choice(_REC_LEGIT)
@@ -136,6 +155,10 @@ def recommendation(email, signals, is_phishing, rng=None):
     elif gov:
         rec = (f"Consulta directamente en la página oficial de {gov} (las de entidades del Estado terminan en .gov.co) o en "
                "sus líneas oficiales. Las entidades no envían multas, embargos ni citaciones con enlaces para pagar.")
+    elif "account_check" in keys:
+        rec = _REC_ACCOUNT
+    elif "hidden_link" in keys:
+        rec = _REC_HIDDEN
     elif keys & {"money_request", "secrecy"}:
         rec = rng.choice(_REC_MONEY)
     else:
@@ -153,7 +176,7 @@ def _legit_points(email, signals):
         pts.append("No pide contraseñas, códigos, datos bancarios ni dinero.")
     if not keys & {"urgency", "threat", "deadline"}:
         pts.append("No presiona con plazos cortos ni amenazas.")
-    if not re.search(r"https?://|www\.", email, re.I):
+    if not re.search(r"https?://|www\.", email, re.I) and "hidden_link" not in keys:
         pts.append("No trae enlaces para hacer clic.")
     if not pts:
         pts.append("El contenido es coherente con un mensaje normal de su tipo.")
@@ -169,8 +192,12 @@ def template_explanation(email: str, is_phishing: bool, prob: float, signals=Non
         if not points:
             points = ["El estilo y lo que pide el correo se parecen a los correos de phishing con los que se entrenó el modelo."]
     else:
-        opening = rng.choice(_OPEN_LEGIT) if not signals else (
-            "El clasificador considera que este correo es legítimo, aunque tiene algunos detalles que conviene revisar.")
+        if needs_review(signals, is_phishing):
+            opening = ("El modelo no lo ve como un fraude claro, pero el correo pide algo delicado, así que conviene revisarlo "
+                       "antes de abrir enlaces o responder.")
+        else:
+            opening = rng.choice(_OPEN_LEGIT) if not signals else (
+                "El clasificador considera que este correo es legítimo, aunque tiene algunos detalles que conviene revisar.")
         pts = _legit_points(email, signals)
         points = rng.sample(pts, k=min(2, len(pts)))
         for s in sorted(signals, key=lambda s: -s.weight)[:2]:

@@ -63,10 +63,19 @@ function fixText(part, tricks, examples) {
   });
 }
 
+/** Enlaces "desactivados" (hxxps://sitio[.]com) -> normales, para revisar el dominio. No cuenta como truco. */
+export function refang(text) {
+  if (/xxp/i.test(text) || text.includes("[") || text.includes("(")) {
+    text = text.replace(/\bhxxp(s?)(:\/\/)/gi, "http$1$2").replace(/\[\.\]|\(\.\)|\[dot\]|\(dot\)/gi, ".");
+  }
+  return text;
+}
+
 /** Quita los disfraces ("c l a v e", "cl4ve", invisibles, letras cirílicas...). Igual a deobfuscate.py. */
 export function deobfuscate(text) {
   const tricks = new Set(), examples = {};
   if (!text) return { text: "", tricks, examples };
+  text = refang(text);
   if (new RegExp(INVISIBLE_CLASS).test(text)) {
     if (new RegExp("[\\p{L}\\p{N}_]" + INVISIBLE_CLASS + "+[\\p{L}\\p{N}_]", "u").test(text)) {
       tricks.add("invisibles");
@@ -201,9 +210,6 @@ const TEXT_RULES = [
   ["money_request", "Pide mover dinero", 20, false,
     /tarjetas? de regalo|gift ?cards?|transferi\w*|transfier\w*|consigna\w*|consigne\w*|\bprest(ar|ame|arme|as)\b|western union|moneygram|bitcoin|criptomoneda\w*|wire transfer|send (the )?money|bank transfer|ganancias? .{0,20}garantizad\w*|guaranteed (returns?|profit)|million (dollars|usd)|\$ ?\d[\d.,]* (million|millones)/,
     (e) => `busca que la persona envíe dinero, compre algo o invierta ("${e}").`],
-  ["shared_doc", "Documento compartido con enlace externo", 15, true,
-    /(te|le|les) (comparto|compartio|ha compartido|envio) .{0,25}?(archivo|documento|formato|enlace|factura)|documento compartido|shared (a )?(file|document) with you|has shared|view (the )?document|inicia sesion con tu cuenta|sign in to (view|access)/,
-    (e) => `invita a abrir un archivo en un enlace externo ("${e}"), una forma común de robar contraseñas.`],
   ["secrecy", "Pide discreción o evita hablar", 15, false,
     /no (puedo|podre) (hablar|contestar)|estoy en una reunion|que quede entre nosotros|confidencial|keep (this )?(confidential|between us)|i am in a meeting|can'?t talk/,
     (e) => `evita que la persona confirme por otro medio ("${e}"), típico del fraude del jefe.`],
@@ -254,9 +260,24 @@ export function detect(text) {
     if (/^\d{1,3}(\.\d{1,3}){3}$/.test(base)) add("ip_url", "Enlace con dirección IP", "el enlace apunta a una dirección IP y no a un dominio oficial.", 25, base);
     if (url.toLowerCase().startsWith("http://")) add("no_https", "Conexión no segura", "el enlace no usa HTTPS, así que la conexión no está cifrada.", 10, base);
   }
+  let hidden = "";
+  const middle = () => {
+    // Botón o enlace que se perdió al copiar el texto ("[Consultar documento]", "desde el siguiente acceso").
+    if (!urls.length) {
+      hidden = first(/\[[^\]\n]{0,30}(consultar|ver|acceder|abrir|descargar|ingresar|iniciar|verificar|revisar|confirmar|actualizar|validar|click|view|open|verify|sign in|log ?in)[^\]\n]{0,30}\]|(desde|en|a traves de|mediante) (el|este) (siguiente )?(acceso|enlace|boton|link|vinculo)|(haz|haga|da|de) clic (en el boton|aqui|abajo)|click (here|below|the button)/, t);
+      if (hidden) add("hidden_link", "Botón o enlace que no se ve",
+        `invita a abrir algo ("${hidden.slice(0, 50)}") pero el enlace no aparece en el texto copiado; no se puede saber a dónde lleva.`, 15, hidden.slice(0, 50));
+    }
+    const acc = first(/(verificar|verifique|verifica|confirmar|confirme|confirma|actualizar|actualice|actualiza|validar|valide|valida)\b.{0,30}?\b(informacion|datos|cuenta|acceso|registro|usuario)s?\b|(datos|cuentas?|registros?|informacion)( asociad\w+ a (las|los|su|tus|sus) cuentas?)? (institucional\w*|pendientes? de (actualizacion|confirmacion|verificacion))|siguen? utilizando (su|tu) cuenta|para no perder (el |tu |su )?acceso|verify (your )?(account|information|details)|confirm (that )?you (still )?use/, t);
+    if (acc) add("account_check", "Pide verificar o actualizar tu cuenta",
+      `pide verificar, confirmar o actualizar tu cuenta o tus datos ("${acc.slice(0, 60)}"), el pretexto más usado para llevar a una página falsa de inicio de sesión.`, 15, acc.slice(0, 60));
+    const sd = first(/(te|le|les) (comparto|compartio|ha compartido|envio) .{0,25}?(archivo|documento|formato|enlace|factura)|documento compartido|shared (a )?(file|document) with you|has shared|view (the )?document|inicia sesion con tu cuenta|sign in to (view|access)/, t);
+    if (sd && (urls.length || hidden)) add("shared_doc", "Documento compartido con enlace externo", ((e) => `invita a abrir un archivo en un enlace externo ("${e}"), una forma común de robar contraseñas.`)(sd), 15, sd);
+  };
   for (const [key, ttl, weight, needsUrl, rx, detail] of TEXT_RULES) {
     const ev = first(rx, t);
     if (ev && (!needsUrl || urls.length)) add(key, ttl, detail(ev), weight, ev);
+    if (key === "money_request") middle();  // mismo orden que signals.py
   }
   let ev = first(/(este es|te escribo (desde|de)|escribiendo desde) (mi |el |un |otro )?(otro |nuevo )?numero( nuevo)?|cambie de (numero|celular)|numero nuevo|nuevo numero|me robaron (el|mi) (celular|telefono)|se me (dano|perdio|cayo|mojo) (el|mi) (celular|telefono)|perdi (el|mi) (celular|telefono|numero)|(correo|celular|telefono) de (una|un) (amiga|amigo)|no (le )?(llames|digas|cuentes) a (mi|nadie)|(lost|broke) my phone|(this is|from) my new number/, t);
   if (ev) add("impersonation", "Dice ser un conocido desde otro número o cuenta",
@@ -335,7 +356,7 @@ function legitPoints(email, signals) {
   const pts = [];
   if (!keys.has("credentials") && !keys.has("money_request")) pts.push("No pide contraseñas, códigos, datos bancarios ni dinero.");
   if (!keys.has("urgency") && !keys.has("threat") && !keys.has("deadline")) pts.push("No presiona con plazos cortos ni amenazas.");
-  if (!/https?:\/\/|www\./i.test(email)) pts.push("No trae enlaces para hacer clic.");
+  if (!/https?:\/\/|www\./i.test(email) && !keys.has("hidden_link")) pts.push("No trae enlaces para hacer clic.");
   if (!pts.length) pts.push("El contenido es coherente con un mensaje normal de su tipo.");
   return pts;
 }
@@ -363,6 +384,15 @@ function findBrand(text, table) {
   return best ? best[1] : null;
 }
 
+const REVIEW_KEYS = ["hidden_link", "account_check", "shared_doc"];
+const REC_HIDDEN = "El correo trae un botón o enlace que no se ve al copiar el texto. Antes de abrirlo, pasa el mouse por encima (sin hacer clic) para ver a dónde lleva, o haz clic derecho, copia el enlace y pégalo aquí para revisarlo. Si te pide iniciar sesión, no lo hagas desde ahí: entra tú mismo a la página oficial.";
+const REC_ACCOUNT = "Te piden verificar o actualizar tu cuenta. No lo hagas desde enlaces ni respondiendo el correo: entra tú mismo al portal oficial escribiendo la dirección y, si tienes dudas, confírmalo con la oficina que dice escribirte por un teléfono o correo que ya conozcas.";
+
+/** Correo que el modelo no ve como fraude pero pide algo delicado: se muestra como "Revisa antes de abrir". */
+export function needsReview(signals, isPhishing) {
+  return !isPhishing && signals.some((s) => REVIEW_KEYS.includes(s.key));
+}
+
 /** Recomendación según el tipo de engaño y la marca o entidad del correo (igual que explain.py). */
 export function recommendation(email, signals, isPhishing) {
   const keys = new Set(signals.map((s) => s.key));
@@ -372,6 +402,8 @@ export function recommendation(email, signals, isPhishing) {
     if (keys.has("money_request") || keys.has("impersonation") || /\b\d+ ?mil\b|\$ ?\d|\bpesos\b|\bplata\b|transferi|consign|\bnequi\b|daviplata/.test(t)) {
       return "Parece normal. Aun así, si te piden enviar plata, confírmalo con una llamada a la persona, al número que ya tenías guardado, antes de hacerlo.";
     }
+    if (keys.has("hidden_link")) return REC_HIDDEN;
+    if (keys.has("account_check")) return REC_ACCOUNT;
     if (bank) return `Parece un aviso real. Si tienes dudas, confírmalo en la app oficial de ${bank}, no desde enlaces del correo.`;
     return pick(REC_LEGIT);
   }
@@ -389,6 +421,10 @@ export function recommendation(email, signals, isPhishing) {
     rec = `No escribas tu contraseña desde este enlace. Abre tú mismo la app o la página oficial de ${account} y revisa si hay algún aviso en tu cuenta. Si ya escribiste tu clave, cámbiala de inmediato.`;
   } else if (gov) {
     rec = `Consulta directamente en la página oficial de ${gov} (las de entidades del Estado terminan en .gov.co) o en sus líneas oficiales. Las entidades no envían multas, embargos ni citaciones con enlaces para pagar.`;
+  } else if (keys.has("account_check")) {
+    rec = REC_ACCOUNT;
+  } else if (keys.has("hidden_link")) {
+    rec = REC_HIDDEN;
   } else if (keys.has("money_request") || keys.has("secrecy")) {
     rec = pick(REC_MONEY);
   } else {
@@ -411,7 +447,9 @@ export function templateExplanation(email, isPhishing, prob, signals) {
     pts.push(`Tiene un detalle a revisar (${s.title.toLowerCase()}: "${s.evidence}"), pero el modelo no lo considera suficiente para decir que es fraude.`);
   }
   return {
-    explicacion: signals.length ? "El clasificador considera que este correo es legítimo, aunque tiene algunos detalles que conviene revisar." : pick(OPEN_LEGIT),
+    explicacion: needsReview(signals, false)
+      ? "El modelo no lo ve como un fraude claro, pero el correo pide algo delicado, así que conviene revisarlo antes de abrir enlaces o responder."
+      : signals.length ? "El clasificador considera que este correo es legítimo, aunque tiene algunos detalles que conviene revisar." : pick(OPEN_LEGIT),
     senales: pts,
     recomendacion: recommendation(email, signals, false),
   };
@@ -437,9 +475,9 @@ export function consistent(parsed, isPhishing) {
 /* ---------------- combine.py ---------------- */
 export const SIGNAL_KEYS = ["mixed_domain", "brand_lookalike", "security_domain", "shortener", "odd_tld", "ip_url",
   "no_https", "urgency", "threat", "credentials", "generic_greeting", "prize", "money_request", "shared_doc",
-  "secrecy", "deadline", "click", "obfuscation", "impersonation", "job_scam", "package_fee"];
+  "secrecy", "deadline", "click", "obfuscation", "impersonation", "job_scam", "package_fee", "account_check", "hidden_link"];
 const REQUEST_KEYS = ["credentials", "money_request", "click", "shared_doc", "prize", "secrecy", "obfuscation",
-  "impersonation", "job_scam", "package_fee"];
+  "impersonation", "job_scam", "package_fee", "account_check", "hidden_link"];
 export const FEATURES = ["lstm_logit", ...SIGNAL_KEYS, "n_urls", "solo_informa"];
 
 function logit(p, eps = 1e-6) {
