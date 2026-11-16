@@ -6,7 +6,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 from shield_core.preprocess import for_model
 from shield_core.signals import detect
-from shield_core.explain import build_prompt, parse_answer, recommendation, _REC_LEGIT, _REC_PHISH, _REC_MONEY
+from shield_core.explain import build_prompt, parse_answer, recommendation, needs_review, _REC_LEGIT, _REC_PHISH, _REC_MONEY
 from shield_core.lstm_numpy import NumpyBiLSTM
 from shield_core.combine import Combiner
 
@@ -23,6 +23,13 @@ texts += [obfuscate(t, rng) for t in es["text"].astype(str)] + [
     "hola " + "_" * 3000 + " texto unsubscribe", "hola " + "-" * 3000 + " original message --- fin", "a@" * 2000,
     "[lista] Asunto\n---- Original Message ----\nFrom: alguien\nTexto reenviado"]
 MODELS = Path(sys.argv[2]) if len(sys.argv) > 2 else ROOT / "models"
+sys.path.insert(0, "/tmp/claude-0/s")
+try:
+    from ia3 import IA3
+    texts += IA3
+except ImportError:
+    pass
+texts += pd.read_csv(ROOT / "data/spanish_blind3.csv").text.astype(str).tolist()
 texts += pd.read_csv(ROOT / "data/spanish_blind.csv").text.astype(str).tolist() + pd.read_csv(ROOT / "data/spanish_blind2.csv").text.astype(str).tolist()
 m = NumpyBiLSTM(MODELS)
 comb = Combiner.load(MODELS)
@@ -34,6 +41,7 @@ for t in texts:
                 "evidence": [s.evidence for s in sig], "prob": p,
                 "prompt": build_prompt(t, p >= 0.5, p, sig),
                 "comb": comb.prob(t, p, sig) if comb else None,
+                "review": needs_review(sig, False),
                 "rec": [r if r.split(" Además")[0] not in _REC_LEGIT + _REC_PHISH + _REC_MONEY else None
                         for r in (recommendation(t, sig, True), recommendation(t, sig, False))]})
 json.dump(out, open(sys.argv[1], "w", encoding="utf-8"), ensure_ascii=False)

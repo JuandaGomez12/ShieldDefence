@@ -18,10 +18,11 @@ from .signals import detect, find_urls
 
 SIGNAL_KEYS = ["mixed_domain", "brand_lookalike", "security_domain", "shortener", "odd_tld", "ip_url", "no_https",
                "urgency", "threat", "credentials", "generic_greeting", "prize", "money_request", "shared_doc",
-               "secrecy", "deadline", "click", "obfuscation", "impersonation", "job_scam", "package_fee"]
+               "secrecy", "deadline", "click", "obfuscation", "impersonation", "job_scam", "package_fee",
+               "account_check", "hidden_link"]
 # Lo que hace que un correo "pida algo": si no tiene enlaces ni ninguna de estas señales, solo informa.
 REQUEST_KEYS = {"credentials", "money_request", "click", "shared_doc", "prize", "secrecy", "obfuscation",
-                "impersonation", "job_scam", "package_fee"}
+                "impersonation", "job_scam", "package_fee", "account_check", "hidden_link"}
 FEATURES = ["lstm_logit"] + SIGNAL_KEYS + ["n_urls", "solo_informa"]
 
 
@@ -46,7 +47,9 @@ def features(email, p_lstm, signals=None):
 # activas (train_combiner.py solo deja las que casi ningún legítimo de validación tiene), el correo se
 # marca aunque la LSTM dude. Sirven para casos que hay pocos en los datos de entrenamiento.
 DECISIVE = [["impersonation", "money_request"], ["job_scam"], ["package_fee"], ["obfuscation", "credentials"],
-            ["brand_lookalike", "credentials"], ["mixed_domain", "credentials"], ["ip_url", "credentials"]]
+            ["brand_lookalike", "credentials"], ["mixed_domain", "credentials"], ["ip_url", "credentials"],
+            ["account_check", "security_domain"], ["account_check", "brand_lookalike"], ["account_check", "odd_tld"],
+            ["account_check", "shortener"], ["account_check", "hidden_link"]]
 
 
 def rule_points(signals):

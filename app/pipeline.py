@@ -13,7 +13,7 @@ from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutTimeout
 from pathlib import Path
 
 from shield_core.combine import Combiner
-from shield_core.explain import SYSTEM, build_prompt, parse_answer, template_explanation
+from shield_core.explain import needs_review, SYSTEM, build_prompt, parse_answer, template_explanation
 from shield_core.lstm_numpy import NumpyBiLSTM
 from shield_core.preprocess import clean_raw, for_model
 from shield_core.signals import detect
@@ -130,6 +130,8 @@ class ShieldDefence:
         conf = prob if is_phishing else 1 - prob
         if is_phishing:
             level, label = ("high", "Riesgo alto") if prob >= 0.85 else ("mid", "Riesgo medio")
+        elif needs_review(signals, is_phishing):
+            level, label = "mid", "Revisa antes de abrir"
         else:
             level, label = "safe", "Sin señales claras de riesgo"
         return {

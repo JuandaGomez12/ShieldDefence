@@ -5,7 +5,7 @@
    Ningún correo sale del computador del usuario.
    ============================================================ */
 import {
-  cleanRaw, detect, BiLSTM, Combiner, SYSTEM, buildPrompt, templateExplanation, parseAnswer, consistent,
+  cleanRaw, detect, BiLSTM, Combiner, needsReview, SYSTEM, buildPrompt, templateExplanation, parseAnswer, consistent,
 } from "./shield-core.js";
 import { LSTM_BASE, LLM_REPO, LLM_MAX_TOKENS, LLM_ENABLED, TRANSFORMERS_URL } from "./config.js";
 import { extractText } from "./files.js";
@@ -109,6 +109,7 @@ async function analyze(text) {
   const isPhishing = prob >= (combiner ? combiner.threshold : lstm.threshold);
   let nivel = "safe", etiqueta = "Sin señales claras de riesgo";
   if (isPhishing) [nivel, etiqueta] = prob >= 0.85 ? ["high", "Riesgo alto"] : ["mid", "Riesgo medio"];
+  else if (needsReview(signals, false)) [nivel, etiqueta] = ["mid", "Revisa antes de abrir"];
   return {
     email, signals,
     es_phishing: isPhishing,
@@ -179,6 +180,7 @@ function buildAnalysisHtml(r, extracted) {
   const pctPhish = pct(r.probabilidad_phishing);
   const title = r.es_phishing
     ? `Posible phishing detectado — ${r.etiqueta} (${pctPhish}%)`
+    : r.nivel === "mid" ? `${r.etiqueta}: no se ve claramente falso, pero pide algo delicado`
     : `${r.etiqueta} — confianza del modelo ${pct(r.confianza)}%`;
   const ext = extracted
     ? `<details><summary>Ver el texto que se leyó del archivo</summary><pre>${escapeHtml(extracted)}</pre></details>` : "";

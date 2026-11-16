@@ -97,10 +97,24 @@ def _fix_text(part, tricks, examples):
     return LEET_TOKEN_RE.sub(leet, part)
 
 
+DEFANG_SCHEME_RE = re.compile(r"\bhxxp(s?)(://)", re.I)
+DEFANG_DOT_RE = re.compile(r"\[\.\]|\(\.\)|\[dot\]|\(dot\)", re.I)
+
+
+def refang(text):
+    """Vuelve normales los enlaces "desactivados" (hxxps://sitio[.]com), para que las reglas de dominios
+    los revisen. No cuenta como truco: así los escriben los equipos de seguridad al reenviar alertas."""
+    if "xxp" in text.lower() or "[" in text or "(" in text:
+        text = DEFANG_SCHEME_RE.sub(r"http\1\2", text)
+        text = DEFANG_DOT_RE.sub(".", text)
+    return text
+
+
 def deobfuscate(text):
     """Devuelve (texto sin disfraces, trucos encontrados, un ejemplo de cada truco)."""
     if not text:
         return "", set(), {}
+    text = refang(text)
     tricks, examples = set(), {}
     m = INVISIBLE_RE.search(text)
     if m:
