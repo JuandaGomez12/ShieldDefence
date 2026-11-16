@@ -22,14 +22,24 @@ async function ocr(image, onStatus) {
   return fixOcrLinks(data.text);  // el OCR lee "sitio.top" como "sitio top" y "https://" como "https:/I"
 }
 
-/* Las imágenes pequeñas se agrandan: Tesseract lee mejor con letras grandes. */
+/* Las imágenes pequeñas se agrandan: Tesseract lee mejor con letras grandes. Los pantallazos en modo
+   oscuro (letra clara sobre fondo oscuro) se invierten: Tesseract lee peor así y se come signos como ":". */
 async function prepareImage(blob) {
   const bmp = await createImageBitmap(blob);
   const scale = bmp.width < 1400 ? Math.min(3, 1400 / bmp.width) : 1;
   const canvas = document.createElement("canvas");
   canvas.width = Math.round(bmp.width * scale);
   canvas.height = Math.round(bmp.height * scale);
-  canvas.getContext("2d").drawImage(bmp, 0, 0, canvas.width, canvas.height);
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  ctx.drawImage(bmp, 0, 0, canvas.width, canvas.height);
+  const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const px = img.data;
+  let sum = 0, n = 0;
+  for (let i = 0; i < px.length; i += 4 * 16) { sum += 0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2]; n++; }
+  if (n && sum / n < 110) {
+    for (let i = 0; i < px.length; i += 4) { px[i] = 255 - px[i]; px[i + 1] = 255 - px[i + 1]; px[i + 2] = 255 - px[i + 2]; }
+    ctx.putImageData(img, 0, 0);
+  }
   return canvas;
 }
 

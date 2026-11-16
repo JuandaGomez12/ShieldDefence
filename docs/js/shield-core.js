@@ -110,8 +110,9 @@ const OCR_TLDS = "com|co|net|org|top|xyz|info|live|click|site|app|edu|gov|io|me|
 /** Arregla los enlaces que el OCR lee mal ("sitio top" -> "sitio.top", "https:/I" -> "https://"). */
 export function fixOcrLinks(text) {
   return (text || "").split("\n").map((line) => {
-    if (!/https?\s*:|www\s*[.,]|@/i.test(line)) return line;
+    if (!/https?\s*:|https?\s*[;.,]?\s*\/|www\s*[.,]|@/i.test(line)) return line;
     line = line.replace(/\b(https?)\s*:\s*\/\s*[\/Il1|]\s*/gi, (m, s) => s.toLowerCase() + "://");
+    line = line.replace(/\b(https?)\s*[;.,]?\s*\/\s*[\/Il|]\s*/gi, (m, s) => s.toLowerCase() + "://");
     line = line.replace(/\bwww\s*[.,]\s*/gi, "www.");
     const rx = new RegExp("([A-Za-z0-9-]{2,})\\s+(" + OCR_TLDS + ")(?=[\\s/:.,;)>\\]]|$)", "g");
     for (let i = 0; i < 2; i++) line = line.replace(rx, "$1.$2");
