@@ -133,6 +133,8 @@ def main():
     ap.add_argument("--models", default=str(ROOT / "models"))
     ap.add_argument("--min_precision", type=float, default=0.95)
     ap.add_argument("--C", type=float, default=1.0)
+    ap.add_argument("--ciega", action="store_true",
+                    help="evaluar también data/spanish_blind.csv (prueba ciega: usarla solo al final, una vez)")
     ap.add_argument("--solo_numpy", action="store_true", help="no usar Keras aunque exista lstm.keras")
     ap.add_argument("--disfrazados", type=float, default=0.2,
                     help="fracción de correos de phishing de validación que se agregan disfrazados")
@@ -200,6 +202,12 @@ def main():
     res["phishing_disfrazado_es"] = {"correos": len(disf), "lstm_sola": round(float((pd_l >= lstm_thr).mean()), 4),
                                      "combinador": round(float((pd_c >= thr).mean()), 4)}
     print("\nPhishing en español disfrazado detectado:", json.dumps(res["phishing_disfrazado_es"]))
+    if a.ciega:
+        bl = pd.read_csv(ROOT / "data" / "spanish_blind.csv")
+        pb = lstm_probs(model, bl.text)
+        cb = lr.predict_proba(feats(bl.text, pb))[:, 1]
+        res["ciega"] = {"lstm_sola": evaluate("PRUEBA CIEGA, BiLSTM sola", bl, pb, lstm_thr, True),
+                        "combinador": evaluate("PRUEBA CIEGA, combinador", bl, cb, thr, True)}
     print("\nPrueba general  BiLSTM sola:", res["lstm_sola"]["test"]["accuracy"],
           "| combinador:", res["combinador"]["test"]["accuracy"])
     json.dump({"features": FEATURES, "pesos": [float(w) for w in lr.coef_[0]], "sesgo": float(lr.intercept_[0]),

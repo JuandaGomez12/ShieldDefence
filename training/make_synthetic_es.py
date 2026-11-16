@@ -146,14 +146,14 @@ def armar(cuerpo, saludo_n=None, firma=None):
 def l_profesor():
     m = R.choice(MATERIAS)
     op = R.choice([
-        [f"Les recuerdo que la entrega del {R.choice(['taller', 'proyecto', 'informe', 'laboratorio'])} de {m} es el {fecha()} antes de las {hora()}.",
-         R.choice(["Por favor suban el archivo en PDF a la plataforma del curso con los nombres de todos los integrantes.",
+        [f"El {R.choice(['taller', 'proyecto', 'informe', 'laboratorio'])} de {m} se entrega el {fecha()} antes de las {hora()}.",
+         R.choice(["Usen la plantilla que está en la carpeta del curso.",
                    "El documento debe incluir portada, resultados y conclusiones.", "No se reciben entregas tarde."]),
          "Si tienen dudas, me pueden escribir por este medio o en el horario de atención."],
-        [f"La clase de {m} del {fecha()} se pasa a {R.choice(LUGARES)}.", "Traigan el portátil con el entorno instalado.",
+        [f"La clase de {m} del {fecha()} será en {R.choice(LUGARES)}.", "Traigan calculadora y la guía impresa.",
          R.choice(["Gracias por la comprensión.", "Cualquier inquietud me avisan.", ""])],
-        [f"Ya están publicadas las notas del {R.choice(['primer', 'segundo', 'tercer'])} parcial de {m}.",
-         "Las pueden revisar en el sistema académico con su usuario de siempre.",
+        [f"Subí las calificaciones del {R.choice(['primer', 'segundo', 'tercer'])} examen de {m}.",
+         "Quedaron en la plataforma, en la pestaña de calificaciones.",
          f"Si quieren revisar el examen, los espero el {fecha()} a las {hora()} en mi oficina."],
         [f"Comparto las diapositivas de la clase de hoy sobre {R.choice(['redes neuronales', 'normalización', 'integrales', 'árboles de decisión', 'concurrencia'])}.",
          "Quedaron en la carpeta del curso.", f"Para la próxima clase lean el capítulo {R.randint(2, 12)} del libro."],
@@ -164,12 +164,12 @@ def l_profesor():
 def l_estudiante():
     m = R.choice(MATERIAS)
     op = R.choice([
-        [f"Le escribo para preguntarle si la nota del parcial de {m} ya está en el sistema.", "No me aparece todavía.", "Muchas gracias por su tiempo."],
+        [f"Profe, ¿el quiz de {m} entra el tema de la última clase?", "Es que no alcancé a tomar apuntes.", "Muchas gracias por su tiempo."],
         [f"Quería saber si es posible presentar el quiz de {m} otro día, porque tuve una cita médica.", "Adjunto la incapacidad."],
         [f"Chicos, ¿nos vemos el {fecha()} en {R.choice(LUGARES)} para avanzar el proyecto de {m}?",
          R.choice(["Yo llevo lo de la base de datos.", "Cada uno revise su parte antes.", "Avisen si no pueden."])],
-        ["Comparto el acta de la reunión de hoy.", f"Quedamos en que cada uno sube su parte al repositorio antes del {fecha()}.",
-         "El martes revisamos todo juntos."],
+        ["Hice un resumen de lo que hablamos hoy.", f"A mí me toca la introducción y a {nombre()} los resultados.",
+         "Si alguien no puede el martes, avise para mover la reunión."],
     ])
     return armar(op, firma=nombre())
 
@@ -256,8 +256,8 @@ def l_compra():
 
 def l_cita():
     op = R.choice([
-        [f"Le recordamos su cita de {R.choice(['medicina general', 'odontología', 'optometría', 'laboratorio'])} el {fecha()} a las {hora()}.",
-         "Por favor llegue 15 minutos antes con su documento de identidad.", "Si no puede asistir, cancele con anticipación."],
+        [f"Tiene programada una consulta de {R.choice(['medicina general', 'odontología', 'optometría', 'laboratorio'])} para el {fecha()}, {hora()}.",
+         "Preséntese con anticipación y traiga su documento.", "Si necesita reprogramar, use la app de la EPS."],
         [f"Su resultado de laboratorio ya está disponible.", "Puede consultarlo en la app de la EPS con su usuario."],
     ])
     return armar(op, firma=R.choice(["Clínica San Rafael", "EPS Sanitas", "Compensar", "Sura"]))
@@ -294,8 +294,8 @@ def p_institucional():
     op = R.choice([
         ["Su buzón de correo institucional alcanzó el límite de almacenamiento.", "Para no perder sus mensajes, valide su cuenta aquí:",
          url_falsa(R.choice(["escuelaing", "outlook", "office365", "correo"]))],
-        ["Su cuenta institucional será desactivada hoy por inactividad.",
-         f"Para mantenerla activa ingrese su usuario y contraseña en {url_falsa(R.choice(['escuelaing', 'microsoft', 'portal']))}."],
+        ["Detectamos actividad inusual en su cuenta de estudiante.",
+         f"Para evitar el cierre, verifique su usuario y contraseña en {url_falsa(R.choice(['escuelaing', 'microsoft', 'portal']))}."],
         ["La universidad está actualizando los datos de los estudiantes para el próximo semestre.",
          f"Complete el formulario con su usuario, contraseña y número de documento: {url_falsa('formulario')}"],
     ])
@@ -306,9 +306,9 @@ def p_jefe():
     """Fraude del jefe: casi nunca tiene enlaces, lo que pide es dinero, códigos o discreción."""
     n = nombre()
     op = R.choice([
-        [R.choice(["Estoy en una reunión y no puedo hablar.", "Estoy en un congreso y no puedo contestar llamadas.", "Ando en una junta toda la tarde."]),
-         f"Necesito que me compres {R.randint(2, 6)} tarjetas de regalo de {plata()} {R.choice(['de Google Play', 'de Amazon', 'del Éxito', 'de Apple'])}.",
-         "Envíame los códigos por aquí apenas las tengas. Te los devuelvo hoy mismo."],
+        [R.choice(["Ando en una junta toda la tarde y no me puedo conectar.", "Estoy en un congreso y no puedo contestar llamadas.", "Tengo el celular sin señal."]),
+         f"Hazme el favor de conseguir {R.randint(2, 6)} tarjetas prepago de {plata()} {R.choice(['de Google Play', 'de Amazon', 'del Éxito', 'de Apple'])}.",
+         "Raspa el código y me lo mandas en foto. Mañana te reintegro."],
         ["¿Estás en la oficina?", f"Necesito que hagas una transferencia urgente de {plata()} a un proveedor nuevo.",
          "Te paso los datos de la cuenta. Que quede entre nosotros por ahora, es un tema confidencial."],
         [f"{n}, necesito un favor rápido y discreto.", "No le comentes a nadie todavía.",
@@ -419,6 +419,136 @@ def con_enlace(texto):
     partes = texto.split("\n\n")
     partes.insert(max(1, len(partes) - 1), linea)
     return "\n\n".join(partes)
+
+
+# ---------------------------------------------------------------- más legítimos del día a día
+# En el dataset original casi no hay correos personales legítimos, y el 40% del phishing son estafas
+# nigerianas escritas en tono personal y hablando de plata. Por eso el modelo veía "personal + plata"
+# como estafa. Estos generadores combinan frases sueltas para dar mucha variedad.
+COMIDAS = ["ajiaco", "bandeja paisa", "sancocho", "lasaña", "arepas", "tamales", "pastel de pollo", "torta de chocolate",
+           "galletas de avena", "arroz con pollo", "empanadas", "pan de bono", "natilla", "buñuelos"]
+FAMILIA = ["mamá", "papá", "tía", "tío", "abuela", "abuelo", "prima", "primo", "hermana", "hermano", "mi amor", "suegra", "madrina"]
+
+
+def frases(*grupos):
+    """Elige una frase de cada grupo (los grupos vacíos o None se saltan)."""
+    return [R.choice(g) for g in grupos if g]
+
+
+def l_plata_familia():
+    """Plata entre familia y amigos: transferencias reales, cuotas, préstamos devueltos."""
+    q = plata()
+    return armar(frases(
+        [f"Ahí va mi parte de la vaca para el asado: {q}.", f"Te consigné {q} por Nequi, lo del almuerzo del domingo.",
+         f"Ahí te devolví los {q} que me prestaste la semana pasada.", f"Mañana te paso los {q} del arriendo, ya me pagaron.",
+         f"Te mandé {q} para el mercado de la semana.", f"Recogimos {q} entre todos para el regalo de grado de {nombre()}.",
+         f"Le pagué a la señora del aseo los {q} de este mes.", f"Ya quedó pago el recibo del gas, fueron {q}."],
+        ["¿Me confirmas si te llegó?", "Avísame cuando lo veas.", "Cualquier cosa me dices.", "Revisa y me cuentas.", ""],
+        ["Gracias por todo.", "Te quiero mucho.", "Un abrazo grande.", "Nos vemos el finde.", ""]), firma=R.choice([nombre(), "Mamá", "Tu hija", ""]))
+
+
+def l_personal():
+    return armar(frases(
+        [f"Me pasaron una receta de {R.choice(COMIDAS)} buenísima, te la copio abajo.", f"¿Vienes el {fecha()} a la casa? Vamos a hacer {R.choice(COMIDAS)}.",
+         "Ya llegamos bien del viaje, el vuelo estuvo tranquilo.", f"Te cuento que {nombre()} pasó a la universidad.",
+         f"Feliz cumpleaños, {nombre()}! Que la pases muy bonito.", "Lamento mucho lo de tu papá, cuenta conmigo para lo que necesites.",
+         f"¿Ya viste las fotos del matrimonio de {nombre()}? Quedaron hermosas.", "El perro ya está mejor, el veterinario dijo que era solo una infección.",
+         f"Nos vemos el {fecha()} en {R.choice(['el centro comercial', 'la casa de la abuela', 'el parque', 'la finca'])}.",
+         f"¿Alguien sabe a qué hora empieza la novena del {fecha()}?", "Se me quedó la sombrilla en tu carro, la recojo mañana."],
+        [f"Se cocina a fuego lento como {R.randint(20, 90)} minutos y se sirve caliente.", "Lleva algo de tomar si puedes.",
+         "Ya le avisé a los demás.", "Ojalá puedas venir.", "Me cuentas cómo te va.", "Te extrañamos mucho.", ""],
+        ["Un abrazo.", "Besos.", "Cuídate mucho.", "Hablamos luego.", ""]), firma=R.choice([nombre(), "Tu tía", "Mamá", ""]))
+
+
+def l_comunidad():
+    return armar(frases(
+        [f"El {fecha()} habrá corte de agua en el sector de {hora()} a {hora()}.", "Recuerden que la cuota de administración vence el 10 de cada mes.",
+         f"La reunión de padres del colegio quedó para el {fecha()} a las {hora()}.", f"La profesora de {nombre()} pide traer el material de artes el lunes.",
+         f"El grupo de oración se reúne el {fecha()} en la parroquia.", "Se perdió un gato gris en la torre 3; si lo ven, avísenle a la portería."],
+        ["Gracias por su colaboración.", "Cualquier duda, en la administración.", ""]),
+        firma=R.choice(["Administración", "Consejo de administración", "Junta de Acción Comunal", "Coordinación académica", nombre()]))
+
+
+def l_entidad():
+    """Avisos reales de entidades, sin pedir datos ni traer enlaces raros."""
+    return armar(frases(
+        [f"La jornada de vacunación contra la influenza será el {fecha()} en todas las sedes.",
+         f"Su solicitud quedó radicada con el número {codigo(7)}; la respuesta llega en máximo 15 días hábiles.",
+         "Le recordamos que la renovación del pasaporte se hace solo con cita previa.",
+         f"El impuesto predial con descuento se puede pagar hasta el {fecha()} en los bancos autorizados.",
+         f"La licencia de conducción que vence este año se renueva en los centros autorizados con examen médico.",
+         f"Su afiliación a la caja de compensación quedó activa desde el {fecha()}."],
+        ["Si tiene dudas, comuníquese con nuestras líneas de atención.", "Lleve su documento de identidad.", "No es necesario realizar ningún otro trámite.", ""]),
+        firma=R.choice(["EPS Sanitas", "Registraduría Nacional", "DIAN", "Secretaría de Movilidad", "Cancillería", "Compensar"]))
+
+
+def l_seguridad_interna():
+    """Campañas internas legítimas que hablan de contraseñas y phishing (pero no piden nada)."""
+    return armar(frases(
+        ["Este mes haremos un simulacro de correos falsos para medir qué tan preparados estamos.",
+         "Active la verificación en dos pasos en su cuenta corporativa; la guía está en la intranet.",
+         "Las claves de los equipos se cambian cada 90 días desde el portal interno, no por correo.",
+         "Los computadores se bloquean solos después de 10 minutos sin uso, por política de la empresa."],
+        ["Si algo le parece raro, llame a la extensión 1200 antes de responder.", "Gracias por ayudarnos a cuidar la información de todos.",
+         "La capacitación virtual es obligatoria y está en el campus de formación.", ""]),
+        firma=R.choice(["Seguridad de la Información", "Mesa de Ayuda", "Tecnología", "Gerencia de TI"]))
+
+
+def l_promo():
+    """Publicidad legítima de tiendas: descuentos sin pedir datos ni enlaces raros."""
+    t = R.choice(TIENDAS + ["Totto", "Arturo Calle", "Crepes & Waffles", "Cine Colombia", "Juan Valdez"])
+    return armar(frases(
+        [f"Temporada de vacaciones: {R.randint(2, 6)}0% menos en {R.choice(['maletas', 'morrales', 'gafas de sol', 'vestidos de baño'])}.",
+         f"Esta semana tenemos 2x1 en {R.choice(['entradas', 'bebidas', 'postres', 'camisetas'])}.", "Conoce la nueva colección de temporada.",
+         f"Acumula puntos con tus compras y redímelos en cualquiera de nuestras tiendas de {R.choice(CIUDADES)}."],
+        ["Válido hasta agotar existencias.", "Te esperamos en nuestras tiendas.", "Promoción solo en tiendas físicas.", ""],
+        ["Si no quieres recibir más correos, puedes darte de baja aquí.", ""]), firma=t)
+
+
+def l_trabajo_corto():
+    return armar(frases(
+        ["Gracias por el apoyo con la presentación de ayer.", f"El café de la oficina se acabó; ¿alguien lo compra el {fecha()}?",
+         "Ya subí la versión final del contrato a la carpeta compartida.", f"Mañana llego tarde porque tengo cita médica a las {hora()}.",
+         f"El parqueadero estará cerrado el {fecha()} por mantenimiento.", "¿Alguien tiene el cargador de un portátil Lenovo que me preste?"],
+        ["Quedo atento.", "Mil gracias.", "Cualquier cosa me escriben al celular.", "Buen trabajo, equipo.", ""]),
+        firma=R.choice([persona(), nombre(), "Talento Humano", ""]))
+
+
+# ---------------------------------------------------------------- más phishing difícil
+def p_bono():
+    b = R.choice(BANCOS + TIENDAS)
+    return armar(frases(
+        [f"Fuiste seleccionado para recibir un cashback de {plata()} en {b}.", f"Tienes un reembolso pendiente de {plata()} en {b}.",
+         f"Tu tarjeta {b} fue elegida para una mejora de cupo sin costo."],
+        [f"Para recibirlo valida tu identidad con tu usuario y clave en {url_falsa(b)}.", "Responde con los 16 dígitos de tu tarjeta y la fecha de vencimiento.",
+         f"Reclámalo en {url_falsa(b)} antes de que venza."],
+        ["Oferta válida por 24 horas.", "Cupos limitados.", ""]), firma=R.choice([b, ""]))
+
+
+def p_factura_llamar():
+    e = R.choice(EMPRESAS + SERVICIOS)
+    return armar(frases(
+        [f"Tiene un saldo en mora con {e} por {plata()}.", "Se generó un cobro a su nombre que no ha sido cancelado.",
+         f"Su crédito presenta {R.randint(2, 6)} cuotas atrasadas."],
+        [f"Para evitar un proceso judicial comuníquese hoy al {R.choice(['3', '6'])}{codigo(9)}.",
+         "Abra el archivo adjunto para ver el estado de cuenta.", "Comuníquese con nuestro asesor para un acuerdo de pago inmediato."],
+        ["Este es el último aviso.", "Evite cobros jurídicos.", ""]), firma=R.choice(["Cartera", "Departamento jurídico", e]))
+
+
+def p_datos_discretos():
+    return armar(frases(
+        [f"Te escribe {persona()}, de la gerencia.", "Te escribo de Contabilidad.", "Soy el nuevo auditor externo."],
+        ["Necesito el listado de proveedores con sus números de cuenta, hoy mismo.",
+         "Mándame una foto de la tarjeta corporativa por los dos lados para un pago.",
+         "Necesito los datos de las tarjetas corporativas para una auditoría."],
+        ["Es confidencial, no copies a nadie más.", "No lo comentes todavía con el equipo.", "Es urgente, respóndeme por aquí.", ""]),
+        firma=R.choice([persona(), "Gerencia", ""]))
+
+
+LEGIT += [l_plata_familia, l_personal, l_comunidad, l_entidad, l_seguridad_interna, l_promo, l_trabajo_corto]
+LEGIT_W += [12, 12, 6, 8, 4, 6, 8]
+PHISH += [p_bono, p_factura_llamar, p_datos_discretos]
+PHISH_W += [8, 7, 7]
 
 
 def generar(n, seed):
