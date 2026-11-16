@@ -111,6 +111,33 @@ validación de las dos clases, y el umbral se elige pidiendo 95% de precisión e
 `lstm_config.json` guarda `falsas_alarmas_por_saludo`: de los correos legítimos de prueba que el modelo
 acierta, qué fracción pasa a phishing si se le antepone un saludo.
 
+## Robustez en español y texto disfrazado
+
+El español del dataset original es traducción automática, y el 40% del phishing son estafas
+nigerianas en tono personal. El modelo marcaba como phishing correos normales en español:
+uno de un profesor, recetas, plata entre familia, avisos reales de bancos. Se hizo esto:
+
+- **Correos sintéticos en español** (`make_synthetic_es.py`): plantillas del día a día y phishing
+  difícil, con las dos clases compartiendo saludos, firmas y largo. `check_overlap.py` comprueba que
+  ninguno se parezca a los correos de prueba.
+- **Palabras desconocidas al entrenar**: el 12% de las palabras se cambia por palabras inventadas,
+  porque el modelo había aprendido que una palabra rara era señal de phishing.
+- **Quitar disfraces** (`shield_core/deobfuscate.py`): "c l a v e", "c.o.n.t.r.a.s.e.ñ.a", "cl4ve",
+  caracteres invisibles, letras cirílicas iguales a las latinas y letras de adorno. El texto limpio
+  es el que ven la LSTM y las reglas, y el disfraz se marca como la señal "Texto disfrazado".
+- **Combinador** (`shield_core/combine.py`): una regresión logística decide con la BiLSTM y las
+  señales de las reglas. Las señales de riesgo solo pueden subir la probabilidad.
+
+| Prueba | Resultado |
+|---|---|
+| Prueba general (2584 correos, inglés y español traducido) | 98.3% |
+| Español escrito a mano (125 correos, usada para ajustar) | 94.4% (2 falsas alarmas, 5 phishing que se escapan) |
+| **Prueba ciega en español** (40 correos escritos antes de ver resultados, usada una vez) | **90%: 0 falsas alarmas en 20 legítimos, 16 de 20 phishing detectados** |
+| Phishing en español disfrazado | 94% detectado |
+
+En la prueba ciega se escaparon: un falso familiar que pide plata, una oferta falsa de trabajo
+por dar likes, un reenvío falso de Amazon y una contraseña escrita con números por letras.
+
 ## Limitaciones
 
 - Casi todos los datos son en inglés y de otros años. El español depende de la traducción automática.
