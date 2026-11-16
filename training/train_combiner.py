@@ -84,8 +84,8 @@ class BoundedLogReg:
     con menos probabilidad de phishing. Los únicos pesos libres son el número de enlaces y "solo informa".
     """
 
-    def __init__(self, C=1.0, free=("n_urls", "solo_informa")):
-        self.C, self.free = C, set(free)
+    def __init__(self, C=1.0, free=("n_urls", "solo_informa"), zero=()):
+        self.C, self.free, self.zero = C, set(free), set(zero)
 
     def fit(self, X, y):
         X, y = np.asarray(X, float), np.asarray(y, float)
@@ -99,7 +99,7 @@ class BoundedLogReg:
             g[:-1] += w[:-1] / self.C
             return l, g
 
-        bounds = [(None, None) if f in self.free else (0, None) for f in FEATURES] + [(None, None)]
+        bounds = [(0, 0) if f in self.zero else (None, None) if f in self.free else (0, None) for f in FEATURES] + [(None, None)]
         r = minimize(loss, np.zeros(Xb.shape[1]), jac=True, method="L-BFGS-B", bounds=bounds)
         self.coef_, self.intercept_ = r.x[None, :-1], r.x[-1:]
         return self
@@ -135,6 +135,7 @@ def main():
     ap.add_argument("--C", type=float, default=1.0)
     ap.add_argument("--ciega", action="store_true",
                     help="evaluar también data/spanish_blind.csv (prueba ciega: usarla solo al final, una vez)")
+    ap.add_argument("--sin", default="", help="variables que no se usan (peso 0), separadas por coma")
     ap.add_argument("--solo_numpy", action="store_true", help="no usar Keras aunque exista lstm.keras")
     ap.add_argument("--disfrazados", type=float, default=0.2,
                     help="fracción de correos de phishing de validación que se agregan disfrazados")
@@ -173,7 +174,7 @@ def main():
     ph_txt = [obfuscate(t, rng) for t in ph.text]
     X_disf = feats(ph_txt, lstm_probs(model, ph_txt))
 
-    lr = BoundedLogReg(C=a.C)
+    lr = BoundedLogReg(C=a.C, zero=a.sin.split(",") if a.sin else ())
     # Se entrena con la validación limpia y con la versión con palabras desconocidas.
     lr.fit(np.vstack([Xv, Xv_ruido, X_disf]), np.concatenate([va.label.values, va.label.values, np.ones(len(X_disf))]))
     cv = lr.predict_proba(Xv)[:, 1]
