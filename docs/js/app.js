@@ -290,6 +290,36 @@ function handleFile(file) {
   });
 }
 
+/* ---------- Ejemplos para probar sin tener un correo a mano ---------- */
+const EXAMPLES = [
+  { label: "Aviso de un profesor", kind: "legit", text: "Hola, buenos días.\n\nLes recuerdo que la fecha límite para entregar el trabajo de la asignatura es este viernes 20 de noviembre.\n\nPor favor, revisen que el documento incluya los nombres de todos los integrantes y que esté en formato PDF.\n\nSi tienen alguna duda sobre las indicaciones, pueden escribirme por este medio.\n\nSaludos,\nProfesor de la asignatura" },
+  { label: "Cuenta institucional bloqueada", kind: "phish", text: "Estimado usuario:\n\nHemos detectado actividad inusual en su cuenta institucional. Por motivos de seguridad, su acceso será suspendido en las próximas 24 horas.\n\nPara evitar el bloqueo, debe verificar sus datos e iniciar sesión nuevamente a través del siguiente enlace:\n\nhttp://verificacion-cuenta-seguridad.example.com/login\n\nSi no realiza este procedimiento antes de finalizar el día, su cuenta será desactivada permanentemente.\n\nGracias por su colaboración.\nDepartamento de Soporte Técnico" },
+  { label: "Familiar que pide plata", kind: "phish", text: "Hola tía, ¿cómo estás? Te escribo desde este correo porque se me perdió el celular y no tengo WhatsApp.\n\nTengo un problema y me da pena con mi mamá. Necesito que me prestes 450.000 pesos hoy mismo para pagar el arriendo, te los devuelvo el viernes sin falta. Me los puedes transferir a la cuenta de un amigo: Nequi 3124567890.\n\nPorfa no le digas nada a mi mamá todavía, yo después le cuento.\n\nTe quiero mucho,\nAndrés" },
+  { label: "Texto disfrazado", kind: "phish", text: "Estimado cliente:\n\nSu c u e n t a de B4nc0lombia fue B-L-O-Q-U-E-A-D-A por seguridad. Para desbloquearla debe confirmar su c.l.a.v.e y el código que le llegó por SMS en las próximas 2 horas.\n\nIngrese aquí: http://b4nc0lombia-seguro.xyz/desbloqueo\n\nEquipo de Seguridad" },
+  { label: "Pide confirmar datos", kind: "", text: "Buen día:\n\nComo parte de la actualización periódica de los registros administrativos, estamos revisando la información de contacto de los colaboradores.\n\nEn algunos casos se han identificado registros incompletos, por lo que estamos solicitando una confirmación de los datos actualmente asociados a cada usuario.\n\nEl proceso forma parte de las actividades habituales de cierre de periodo.\n\nAgradecemos su colaboración.\n\nAtentamente,\nGestión Humana" },
+  { label: "Pantallazo en modo oscuro", kind: "img", image: "ejemplos/pantallazo_oscuro.png" },
+];
+(function renderExamples() {
+  const box = $("examples");
+  if (!box) return;
+  EXAMPLES.forEach((ex) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "chip " + ex.kind;
+    b.textContent = ex.label;
+    b.addEventListener("click", async () => {
+      if (busy) return;
+      if (ex.image) {
+        const blob = await fetch(ex.image).then((r) => r.blob());
+        handleFile(new File([blob], ex.image.split("/").pop(), { type: blob.type || "image/png" }));
+      } else {
+        handleSend(ex.text);
+      }
+    });
+    box.appendChild(b);
+  });
+})();
+
 /* ---------- Eventos ---------- */
 function autoResize() {
   input.style.height = "auto";
