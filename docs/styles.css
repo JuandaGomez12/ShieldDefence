@@ -322,3 +322,28 @@ body {
 .status.loading { background: #fef3c7; color: #92400e; }
 .status.error { background: #fee4e2; color: #b42318; }
 .llm-toggle[hidden] { display: none; }
+
+/* ---------- Ejemplos para probar (pantalla de inicio) ---------- */
+.examples { margin-top: 26px; }
+.welcome p.examples-title { color: var(--text); font-weight: 600; margin-bottom: 10px; }
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+.chip {
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--text);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+}
+.chip:hover { border-color: var(--accent); background: var(--accent-soft); }
+.chip.img::before { content: "🖼 "; }
